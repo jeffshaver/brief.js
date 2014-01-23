@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>brief.js test</title>
+  <style type="text/css">
+    #resultBox {
+      height: 500px;
+    }
+  </style>
+  <script src="../src/brief.min.js"></script>
+</head>
+<body>
+  <a href="#" class="test" id="test">test1</a>
+  <a href="#" class="test">test2</a>
+  <a href="#">test3</a>
+  <div id="resultBox"></div>
+  <script>
+    var resultBox = $('#resultBox');
+    $('body').on('click', function(event) {
+      event.preventDefault();
+      resultBox.innerHTML += 'this event was triggered by clicking an anchor tag, but the listener is actually on the body which is delegating it to the anchor tag.<br>';
+    }, 'a');
+    $('#test').on('click', function(event) {
+      event.preventDefault();
+      resultBox.innerHTML += 'this event was triggered by clicking on the element with the #test id.<br>'
+    });
+    $('.test').on('click', function(event) {
+      event.preventDefault();
+      resultBox.innerHTML += 'this event was triggered by clicking on an element with the .test class.<br>'
+    });
+  </script>
+</body>
+</html>
