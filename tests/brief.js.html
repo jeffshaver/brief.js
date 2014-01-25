@@ -3,8 +3,21 @@
 <head>
   <title>brief.js test</title>
   <style type="text/css">
+    body, html {
+      height: 100%;
+      width: 100%;
+    }
+    body {
+      font-family: 'Comfortaa', Arial;
+    }
     #resultBox {
       height: 500px;
+    }
+    @font-face {
+      font-family: 'Comfortaa';
+      font-style: normal;
+      font-weight: 300;
+      src: local('Comfortaa Light'), local('Comfortaa-Light'), url(http://themes.googleusercontent.com/static/fonts/comfortaa/v4/r_tUZNl0G8xCoOmp_JkSCnhCUOGz7vYGh680lGh-uXM.woff) format('woff');
     }
   </style>
   <script src="../src/brief.min.js"></script>
@@ -15,7 +28,7 @@
   <a href="#">test3</a>
   <div id="resultBox"></div>
   <script>
-    var resultBox = $('#resultBox');
+      var resultBox = $('#resultBox');
     $('body').on('click', function(event) {
       event.preventDefault();
       resultBox.innerHTML += 'this event was triggered by clicking an anchor tag, but the listener is actually on the body which is delegating it to the anchor tag.<br>';

@@ -1,4 +1,4 @@
-(function (document, Element, NodeList) {
+var $ = (function (document, Element, NodeList) {
   'use strict';
   var $ = function (query) {
     var r = document.querySelectorAll(query);
@@ -40,4 +40,5 @@
     });
     return this;
   };
+  return $;
 }(document, Element, NodeList));
