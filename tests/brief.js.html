@@ -20,27 +20,36 @@
       src: local('Comfortaa Light'), local('Comfortaa-Light'), url(http://themes.googleusercontent.com/static/fonts/comfortaa/v4/r_tUZNl0G8xCoOmp_JkSCnhCUOGz7vYGh680lGh-uXM.woff) format('woff');
     }
   </style>
-  <script src="../src/brief.min.js"></script>
+  <script src="../src/brief.js"></script>
 </head>
 <body>
   <a href="#" class="test" id="test">test1</a>
   <a href="#" class="test">test2</a>
   <a href="#">test3</a>
+  <button id="removeEventListeners">Remove Listeners</button>
   <div id="resultBox"></div>
   <script>
-      var resultBox = $('#resultBox');
-    $('body').on('click', function(event) {
-      event.preventDefault();
-      resultBox.innerHTML += 'this event was triggered by clicking an anchor tag, but the listener is actually on the body which is delegating it to the anchor tag.<br>';
-    }, 'a');
-    $('#test').on('click', function(event) {
-      event.preventDefault();
-      resultBox.innerHTML += 'this event was triggered by clicking on the element with the #test id.<br>'
-    });
-    $('.test').on('click', function(event) {
-      event.preventDefault();
-      resultBox.innerHTML += 'this event was triggered by clicking on an element with the .test class.<br>'
-    });
+      var resultBox = $('#resultBox'),
+          listener1 = function(event) {
+            event.preventDefault();
+            resultBox.innerHTML += 'this event was triggered by clicking an anchor tag, but the listener is actually on the body which is delegating it to the anchor tag.<br>';
+          },
+          listener2 = function(event) {
+            event.preventDefault();
+            resultBox.innerHTML += 'this event was triggered by clicking on the element with the #test id.<br>'
+          },
+          listener3 = function(event) {
+            event.preventDefault();
+            resultBox.innerHTML += 'this event was triggered by clicking on an element with the .test class.<br>'
+          }
+    $('body').on('click', listener1, 'a');
+    $('#test').on('click', listener2);
+    $('.test').on('click', listener3);
+    $('#removeEventListeners').on('click', function() {
+      $('body').off('click', listener1, 'a');
+      $('#test').off('click', listener2);
+      $('.test').off('click', listener3);
+    })
   </script>
 </body>
 </html>
