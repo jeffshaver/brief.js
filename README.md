@@ -40,6 +40,7 @@ Delegation example
 $('body').on('click', function(event) {
   // code to run on click if the element is an anchor tag
 }, 'a');
+```
 
 Remove Event Listeners
 ======================
