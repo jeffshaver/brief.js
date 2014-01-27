@@ -1,6 +1,6 @@
 var $ = (function (document, Element, NodeList) {
   'use strict';
-  var managedDeleagteListeners = {},
+  var delegatedListeners = {},
       i = 0,
       $ = function (query) {
         var r = document.querySelectorAll(query);
@@ -36,7 +36,7 @@ var $ = (function (document, Element, NodeList) {
           this.addEventListener(type, newFunction, true);
         }
       }
-      manangedDelegateListeners[i++] = {
+      delegatedListeners[i++] = {
         originalCallback: callback,
         createdCallback: newFunction
       };
@@ -54,16 +54,16 @@ var $ = (function (document, Element, NodeList) {
     if (!delegatee) {
       this.removeEventListener(type, callback);
     } else {
-      for (var key in manangedDelegateListeners) {
-        var obj = manangedDelegateListeners[key];
+      for (var key in delegatedListeners) {
+        var obj = delegatedListeners[key];
         if (obj.originalCallback == callback) {
           this.removeEventListener(type, obj.createdCallback, true);
-
+          break;
         }
       }
     }
     return this;
-  }
+  };
   NodeList.prototype.off = function (type, callback, delegatee) {
     [].forEach.call(this, function (element) {
       element.off(type, callback, delegatee);

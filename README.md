@@ -1,7 +1,7 @@
 brief.js
 ========
 
-Small piece of JS that simplifies getting elements and adding events. Can do event delegation too.
+Small wrapper overtop of the querySelectorAll method that enables chaining and simple event listening (and delegation).
 
 Usage
 =====
@@ -40,7 +40,6 @@ Delegation example
 $('body').on('click', function(event) {
   // code to run on click if the element is an anchor tag
 }, 'a');
-```
 
 Remove Event Listeners
 ======================
