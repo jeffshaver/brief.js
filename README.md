@@ -33,12 +33,32 @@ $('#id').on('click', function(event) {
 });
 ```
 
+You can also chain!
+
+```
+$('#id').on('mouseover', function(event) {
+  // code to run on mouseover
+}).on('click', function(event) {
+  // code to run on click
+});
+```
+
 Delegation example
 ==================
 
 ```
 $('body').on('click', function(event) {
   // code to run on click if the element is an anchor tag
+}, 'a');
+```
+
+You can chain these too!
+
+```
+$('body').on('click', function(event) {
+  // code to run on click if the element is an anchor tag
+}, 'a').on('mouseover', function(event) {
+  // code to run on mouseover if the element is an anchor tag
 }, 'a');
 ```
 
