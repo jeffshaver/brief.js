@@ -43,6 +43,14 @@ $('#id').on('mouseover', function(event) {
 });
 ```
 
+And it supports multiple event listener types for one function!
+
+```
+$('#id').on('mouseenter, mouseleave', function(event) {
+  // code to run on mouseenter and mouseleave
+});
+```
+
 Delegation example
 ==================
 
@@ -61,6 +69,13 @@ $('body').on('click', function(event) {
   // code to run on mouseover if the element is an anchor tag
 }, 'a');
 ```
+
+You can run it on multiple event listeners too!
+
+```
+$('body').on('mouseenter, mouseleave', function(event) {
+  // code to run on mouseenter and mouseleave of an anchor element
+}, 'a');
 
 Remove Event Listeners
 ======================

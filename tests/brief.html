@@ -3,6 +3,11 @@
 <head>
   <title>brief.js test</title>
   <style type="text/css">
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
     body, html {
       height: 100%;
       width: 100%;
@@ -10,8 +15,16 @@
     body {
       font-family: 'Comfortaa', Arial;
     }
+    #links {
+      position: fixed;
+      width: 100%;
+      background: white;
+      height: 50px;
+      padding: 10px;
+    }
     #resultBox {
       height: 500px;
+      padding-top: 50px;
     }
     @font-face {
       font-family: 'Comfortaa';
@@ -23,33 +36,40 @@
   <script src="../src/brief.min.js"></script>
 </head>
 <body>
-  <a href="#" class="test" id="test">test1</a>
-  <a href="#" class="test">test2</a>
-  <a href="#">test3</a>
-  <button id="removeEventListeners">Remove Listeners</button>
+  <div id="links">
+    <a href="#" class="test" id="test">test1</a>
+    <a href="#" class="test">test2</a>
+    <a href="#">test3</a>
+    <button id="removeEventListeners">Remove Listeners</button>
+  </div>
   <div id="resultBox"></div>
   <script>
-      var resultBox = $('#resultBox'),
-          listener1 = function(event) {
-            event.preventDefault();
-            resultBox.innerHTML += 'this event was triggered by clicking an anchor tag, but the listener is actually on the body which is delegating it to the anchor tag.<br>';
-          },
-          listener2 = function(event) {
-            event.preventDefault();
-            resultBox.innerHTML += 'this event was triggered by clicking on the element with the #test id.<br>'
-          },
-          listener3 = function(event) {
-            event.preventDefault();
-            resultBox.innerHTML += 'this event was triggered by clicking on an element with the .test class.<br>'
-          }
-    $('body').on('click', listener1, 'a');
+      var resultBox = $('#resultBox');
+      var listener1 = function(event) {
+        event.preventDefault();
+        resultBox.innerHTML = 'this event was triggered by clicking an anchor tag, but the listener is actually on the body which is delegating it to the anchor tag.<br>' + resultBox.innerHTML;
+      };
+      var listener2 = function(event) {
+        event.preventDefault();
+        resultBox.innerHTML = 'this event was triggered by clicking on the element with the #test id.<br>' + resultBox.innerHTML;
+      };
+      var listener3 = function(event) {
+        event.preventDefault();
+        resultBox.innerHTML = 'this event was triggered by clicking on an element with the .test class.<br>' + resultBox.innerHTML;
+      };
+      var listener4 = function(event) {
+        resultBox.innerHTML = event.type + '<br>' + resultBox.innerHTML;
+      }
+    $('body').on('mouseenter mouseleave', listener1, 'a');
     $('#test').on('click', listener2);
     $('.test').on('click', listener3);
+    $('body').on('mouseenter mouseleave', listener4);
     $('#removeEventListeners').on('click', function() {
-      $('body').off('click', listener1, 'a');
+      $('body').off('mouseenter mouseleave', listener1, 'a');
       $('#test').off('click', listener2);
       $('.test').off('click', listener3);
-    })
+      $('body').off('mouseenter mouseleave', listener4);
+    });
   </script>
 </body>
 </html>
