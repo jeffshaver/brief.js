@@ -76,6 +76,7 @@ You can run it on multiple event listeners too!
 $('body').on('mouseenter, mouseleave', function(event) {
   // code to run on mouseenter and mouseleave of an anchor element
 }, 'a');
+```
 
 Remove Event Listeners
 ======================
