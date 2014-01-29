@@ -1,3 +1,12 @@
+/*!
+ * brief.js
+ *
+ * Copyright 2014 Jeffrey E. Shaver II
+ * Released under the MIT license
+
+ * https://github.com/jeffshaver/brief.js/blob/master/LICENSE
+ */
+
 (function (document, Element, NodeList) {
   'use strict';
   /*
