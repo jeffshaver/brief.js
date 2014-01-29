@@ -56,7 +56,6 @@
         newFunction = function(event) {
           var elements = this.brief(delegatee);
           if (!elements.length && event.srcElement == elements) {
-            //console.log(this, type, newFunction, delegatee);
             if (autoRemove) this.off(type, callback, delegatee);
             callback(event);
           } else {
@@ -87,7 +86,6 @@
   Element.prototype.one = function() {
     var args = Array.prototype.slice.call(arguments,0);
     args.push(true);
-    console.log(args);
     return Element.prototype.on.apply(this, args);
   };
 
