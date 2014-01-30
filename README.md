@@ -10,7 +10,7 @@ Similar to jQuery, brief.js will use the brief function to grab elements. But th
 
 brief.js also adds ```.on``` methods to the Element and NodeList prototypes.
 
-The ```.on``` method for either accepts 3 arguments. ```type```, ```callback``` and ```delegatee```.
+The ```.on``` method for either accepts 4 arguments. ```type```, ```callback```, ```[delegatee]``` and ```[autoRemove]```.
 
 The ```.on``` method is chainable. It will return the Element or NodeList that it was called on.
 
