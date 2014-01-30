@@ -1,7 +1,23 @@
 brief.js
 ========
 
-Small wrapper overtop of the querySelectorAll method that enables chaining and simple event listening (and delegation).
+Small (~1.5k) wrapper overtop of the querySelectorAll method that enables chaining and simple event listening (and delegation).
+
+Browser Support
+===============
+
+IE9+ and any modern browser.
+
+We need to support 
+
+```document.addEventListener```,
+
+```document.querySelectorAll```,
+
+```Array.prototype.forEach```,
+
+```Element.prototype.matchesSelector``` (or one of it's prefixed verisons)
+
 
 Usage
 =====
@@ -27,6 +43,18 @@ The magical $
 If it isn't taken, brief.js will also take over the $ so that you can have an even shorter syntax!
 
 So any example below that uses ```brief``` could also use ```$``` as long as another library isn't using it.
+
+Grabbing Elements
+=================
+
+You can use brief to grab elements easily. Since it is a wrapper for querySelectorAll you can use it like this:
+
+```
+var elements = brief('#id > .class');
+var element = brief('#id');
+```
+
+If briefs query returns one element from querySelectorAll, then it will return an Element. If the query returns multiple elements, it returns a NodeList.
 
 
 Non-delegation example

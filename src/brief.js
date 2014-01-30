@@ -1,4 +1,4 @@
-/*!
+/*
  * brief.js
  *
  * Copyright 2014 Jeffrey E. Shaver II
@@ -15,13 +15,25 @@
    * remove them later if need be
    */
   var managedListeners = [];
+  /*
+   * Save references for some of the prototype methods
+   * we will need
+   */
   var slice = Array.prototype.slice;
   var forEach = Array.prototype.forEach;
+  var matchFunction = (Element.prototype.matchesSelector || 
+    Element.prototype.msMatchesSelector || 
+    Element.prototype.mozMatchesSelector || 
+    Element.prototype.webkitMatchesSelector || 
+    Element.prototype.oMatchesSelector);
   /*
    * We also need a simple var that can give us a unique
    * id for object properties
    */
   var i = 0;
+  var match = function(el, selector) {
+    return matchFunction.call(el, selector);
+  }
   /*
    * This is the main function. It will grab elements using
    * querySelectorAll
@@ -65,18 +77,9 @@
        */
       } else {
         newFunction = function(event) {
-          var elements = this.brief(delegatee);
-          if (!elements.length && event.srcElement == elements) {
+          if (match(event.srcElement, delegatee)) {
             if (autoRemove) this.off(type, callback, delegatee);
             callback(event);
-          } else {
-            for (var i = 0, len = elements.length; i < len; i++) {
-              if (event.srcElement == elements[i]) {
-                if(autoRemove) this.off(type, callback, delegatee);
-                callback(event);
-                break;
-              }
-            }
           }
         }
         // Apply the function we created to the listener
