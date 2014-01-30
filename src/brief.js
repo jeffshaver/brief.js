@@ -15,6 +15,8 @@
    * remove them later if need be
    */
   var managedListeners = [];
+  var slice = Array.prototype.slice;
+  var forEach = Array.prototype.forEach;
   /*
    * We also need a simple var that can give us a unique
    * id for object properties
@@ -93,20 +95,20 @@
   };
   
   Element.prototype.one = function() {
-    var args = Array.prototype.slice.call(arguments,0);
+    var args = slice.call(arguments,0);
     args.push(true);
     return Element.prototype.on.apply(this, args);
   };
 
   NodeList.prototype.on = function (type, callback, delegatee) {
-    [].forEach.call(this, function (element) {
+    forEach.call(this, function (element) {
       element.on(type, callback, delegatee);
     });
     return this;
   };
   NodeList.prototype.one = function() {
-    var args = Array.prototype.slice.call(arguments,0);
-    [].forEach.call(this, function (element) {
+    var args = slice.call(arguments,0);
+    forEach.call(this, function (element) {
       element.one.apply(element, args);
     });
   };
@@ -137,7 +139,7 @@
     return this;
   };
   NodeList.prototype.off = function (type, callback, delegatee) {
-    [].forEach.call(this, function (element) {
+    forEach.call(this, function (element) {
       element.off(type, callback, delegatee);
     });
     return this;
