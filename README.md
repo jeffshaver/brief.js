@@ -51,7 +51,7 @@ brief('#id').on('mouseover', function(event) {
 And it supports multiple event listener types for one function!
 
 ```
-brief('#id').on('mouseenter, mouseleave', function(event) {
+brief('#id').on('mouseenter mouseleave', function(event) {
   // code to run on mouseenter and mouseleave
 });
 ```
@@ -86,7 +86,7 @@ brief('body').on('click', function(event) {
 You can run it on multiple event listeners too!
 
 ```
-brief('body').on('mouseenter, mouseleave', function(event) {
+brief('body').on('mouseenter mouseleave', function(event) {
   // code to run on mouseenter and mouseleave of an anchor element
 }, 'a');
 ```
