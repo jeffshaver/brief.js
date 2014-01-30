@@ -6,7 +6,7 @@ Small wrapper overtop of the querySelectorAll method that enables chaining and s
 Usage
 =====
 
-Similar to jQuery, brief.js will use the $ to grab elements. But that is all that it will do.
+Similar to jQuery, brief.js will use the brief function to grab elements. But that is all that it will do.
 
 brief.js also adds ```.on``` methods to the Element and NodeList prototypes.
 
