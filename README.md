@@ -10,13 +10,13 @@ IE9+ and any modern browser.
 
 We need to support 
 
-```document.addEventListener```
+- ```document.addEventListener```
 
-```document.querySelectorAll```
+- ```document.querySelectorAll```
 
-```Array.prototype.forEach```
+- ```Array.prototype.forEach```
 
-```Element.prototype.matchesSelector``` (or one of it's prefixed verisons)
+- ```Element.prototype.matchesSelector``` (or one of it's prefixed verisons)
 
 
 Usage
