@@ -54,10 +54,12 @@
     }
     /*
      * Since we want to support multiple listeners types 
-     * at once, we need to split up the types and run this
-     * code for each type
+     * at once, we need to split up the types if they 
+     * passed in a string
      */
-    type = type.split(' ');
+    if (type.constructor == String) {
+      type = type.split(' ');
+    }
     type.forEach(function(type) {
       var newFunction = callback;
       if (autoRemove) newFunction = function(event) {
@@ -97,7 +99,7 @@
     return this;
   };
   
-  Element.prototype.one = function() {
+  Element.prototype.once = function() {
     var args = slice.call(arguments,0);
     args.push(true);
     return Element.prototype.on.apply(this, args);
@@ -109,14 +111,16 @@
     });
     return this;
   };
-  NodeList.prototype.one = function() {
+  NodeList.prototype.once = function() {
     var args = slice.call(arguments,0);
     forEach.call(this, function (element) {
-      element.one.apply(element, args);
+      element.once.apply(element, args);
     });
   };
   Element.prototype.off = function(type, callback, delegatee) {
-    type = type.split(' ');
+    if (type.constructor == String) {
+      type = type.split(' ');
+    }
     type.forEach(function(type) {
       if (!delegatee) {
         this.removeEventListener(type, callback, false);

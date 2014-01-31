@@ -42,7 +42,7 @@ The first two arguments are required and the last 2 are optional.
 
 The first optional argument is used if you want to delegate the event. This argument can be any CSS selector. This can be completely ignored if you don't want to delegate the event, or if you only want to use the last argument.
 
-The last last optional argument can be used if you want to remove the event listener after the first time that it is called. However, a convenience method is added for you ```.one``` so that you can avoid using this altogether.
+The last last optional argument can be used if you want to remove the event listener after the first time that it is called. However, a convenience method is added for you ```.once``` so that you can avoid using this altogether.
 
 
 The magical $
@@ -95,7 +95,7 @@ brief('#id').on('mouseenter mouseleave', function(event) {
 You can also add event listeners that only need to be run once!
 
 ```
-brief('#id').one('click', function(event) {
+brief('#id').once('click', function(event) {
   // code to run once on click
 });
 ```
@@ -130,7 +130,7 @@ brief('body').on('mouseenter mouseleave', function(event) {
 You can run these once too!
 
 ```
-brief('body').one('click', function(event) {
+brief('body').once('click', function(event) {
   //code to run once with the delegated listener
 }, 'a');
 ```

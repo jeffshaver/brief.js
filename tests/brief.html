@@ -64,7 +64,7 @@
     $('#test').on('click', listener2);
     $('.test').on('click', listener3);
     $('body').on('mouseenter mouseleave', listener4);
-    $('body').one('mouseleave', function(event) {
+    $('body').once('mouseleave', function(event) {
       resultBox.innerHTML = 'oh no! you moved your mouse off the body for the first time!!!<br>' + resultBox.innerHTML;
     });
     $('#removeEventListeners').on('click', function() {
