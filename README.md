@@ -23,9 +23,8 @@ Array.prototype.forEach
 ```
 
 ```
-Element.prototype.matchesSelector
+Element.prototype.matchesSelector // or one of it's prefixed verisons
 ```
-(or one of it's prefixed verisons)
 
 
 Usage
