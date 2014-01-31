@@ -90,6 +90,12 @@ And it supports multiple event listener types for one function!
 brief('#id').on('mouseenter mouseleave', function(event) {
   // code to run on mouseenter and mouseleave
 });
+
+// or
+
+brief('#id').on(['mouseenter', 'mouseleave'], function(event) {
+  // code to run on mouseenter and mouseleave
+});
 ```
 
 You can also add event listeners that only need to be run once!
