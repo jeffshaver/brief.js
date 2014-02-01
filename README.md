@@ -30,15 +30,21 @@ Element.prototype.matchesSelector // or one of it's prefixed verisons
 Usage
 =====
 
-Similar to jQuery, brief.js will use the brief function to grab elements. But that is all that it will do.
+brief.js will use the brief function to grab elements and return them as an array-like brief object.
 
-brief.js also adds ```.on``` methods to the Element and NodeList prototypes.
+With this object you will be able to add event listeners and remove event listeners to and from the contained elements.
 
-The ```.on``` method for either accepts 4 arguments. ```type```, ```callback```, ```[delegatee]``` and ```[autoRemove]```.
+th
+
+The ```.on``` method accepts 4 arguments. ```type```, ```callback```, ```[delegatee]``` and ```[autoRemove]```.
 
 The ```.on``` method is chainable. It will return the Element or NodeList that it was called on.
 
 The first two arguments are required and the last 2 are optional.
+
+type can be a string of event types (space-separated) or an array or event types
+
+callback must be a function. It will be passed an event object
 
 The first optional argument is used if you want to delegate the event. This argument can be any CSS selector. This can be completely ignored if you don't want to delegate the event, or if you only want to use the last argument.
 
