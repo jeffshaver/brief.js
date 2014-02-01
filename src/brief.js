@@ -9,7 +9,6 @@
 
 (function(document, Element, Array) {
   'use strict';
-  var arr = [];
   // For delegated listeners, we will need to manage a list of callbacks
   var managedListeners = [];
   var i = 0;
@@ -17,16 +16,20 @@
    * We need to save references to some prototype methods that
    * we will need later
    */
-  var slice = Array.prototype.slice;
-  var splice = Array.prototype.splice;
-  var forEach = Array.prototype.forEach;
-  var push = Array.prototype.push;
-  var pop = Array.prototype.pop;
-  var matchFunction = (Element.prototype.matchesSelector || 
-    Element.prototype.msMatchesSelector || 
-    Element.prototype.mozMatchesSelector || 
-    Element.prototype.webkitMatchesSelector || 
-    Element.prototype.oMatchesSelector);
+  var arr = Array.prototype;
+  var el = Element.prototype;
+  var slice = arr.slice;
+  var splice = arr.splice;
+  var forEach = arr.forEach;
+  var push = arr.push;
+  var pop = arr.pop;
+  var matchFunction = (
+    el.matchesSelector || 
+    el.msMatchesSelector || 
+    el.mozMatchesSelector || 
+    el.webkitMatchesSelector || 
+    el.oMatchesSelector
+  );
   /*
    * This function will use whatever matchesSelector function
    * is available for that browser
