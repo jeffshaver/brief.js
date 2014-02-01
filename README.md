@@ -1,7 +1,29 @@
 brief.js
 ========
 
-Small (~1.5k) wrapper overtop of the querySelectorAll method that enables chaining and simple event listening (and delegation).
+Small (~1.9k) wrapper overtop of the querySelectorAll method that enables chaining and simple event listening (and delegation).
+
+brief objects
+=============
+
+brief objects are array-like objects that are created when using brief.js. These objects hold elements and provide several methods to interact with them:
+
+```splice```, ```push```, ```pop```, ```indexOf```, ```get```, ```find```, ```forEach```, ```on```, ```once``` and ```off`.
+
+splice, push, pop and forEach are the original array methods applied to the brief object.
+
+indexOf takes in a selector and looks for an element that matches that selector.
+
+get takes in an index and returns the element at that position.
+
+find takes in a selector and queries for elements within the context,
+
+on takes four arguemnts (two required and two optional). it takes in a string of event types or an array of event types, a callback, and one of both of the following: a delegation selector and/or whether to automatically remove the listener after the first call and adds event listeners.
+
+once is a convenience method that applies the .on method with the last parameter as true.
+
+off takes in a string of event types or an array of event types, a callback and (optional) delegation selector and removes the event listeners.
+
 
 Browser Support
 ===============
@@ -32,9 +54,7 @@ Usage
 
 brief.js will use the brief function to grab elements and return them as an array-like brief object.
 
-With this object you will be able to add event listeners and remove event listeners to and from the contained elements.
-
-th
+With this object you will be able to add event listeners, remove event listeners, iterate over the elements and search for child elements.
 
 The ```.on``` method accepts 4 arguments. ```type```, ```callback```, ```[delegatee]``` and ```[autoRemove]```.
 
@@ -61,14 +81,14 @@ So any example below that uses ```brief``` could also use ```$``` as long as ano
 Grabbing Elements
 =================
 
-You can use brief to grab elements easily. Since it is a wrapper for querySelectorAll you can use it like this:
+You can use brief to grab elements easily.
 
 ```
 var elements = brief('#id > .class');
 var element = brief('#id');
 ```
 
-If briefs query returns one element from querySelectorAll, then it will return an Element. If the query returns multiple elements, it returns a NodeList.
+Any of these will return brief objects.
 
 
 Non-delegation example
