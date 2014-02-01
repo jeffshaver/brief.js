@@ -1,16 +1,22 @@
 brief.js
 ========
 
-Small (~1.9k) wrapper overtop of the querySelectorAll method that enables chaining and simple event listening (and delegation).
+Small (~2.2k minified, <1k gzipped) wrapper overtop of the querySelectorAll method that enables chaining and simple event listening (and delegation).
 
 brief objects
 =============
 
 brief objects are array-like objects that are created when using brief.js. These objects hold elements and provide several methods to interact with them:
 
-```splice```, ```push```, ```pop```, ```indexOf```, ```get```, ```find```, ```forEach```, ```on```, ```once``` and ```off`.
+```splice```, ```push```, ```pop```, ```toArray```, ```empty```, ```filter```, ```indexOf```, ```get```, ```find```, ```forEach```, ```on```, ```once``` and ```off`.
 
 splice, push, pop and forEach are the original array methods applied to the brief object.
+
+toArray turns the current brief object into an array of the elements that are contained in it.
+
+empty removes all elements from the object
+
+filter takes a selector and removes all elements that don't match the selector from the object
 
 indexOf takes in a selector and looks for an element that matches that selector.
 
@@ -81,7 +87,7 @@ So any example below that uses ```brief``` could also use ```$``` as long as ano
 Grabbing Elements
 =================
 
-You can use brief to grab elements easily.
+You can use brief to grab elements easily. You can pass in a selector (required) and a context (optional). The selector must be a string, however, the context can be a string or a brief object.
 
 ```
 var elements = brief('#id > .class');

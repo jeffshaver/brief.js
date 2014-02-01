@@ -23,6 +23,7 @@
   var forEach = arr.forEach;
   var push = arr.push;
   var pop = arr.pop;
+  var filter = arr.filter;
   var matchFunction = (
     el.matchesSelector || 
     el.msMatchesSelector || 
@@ -40,11 +41,12 @@
   /*
    * The brief function will create and return a new brief object (array-like)
    */
-  var brief = function(selector) {
-    return new brief.fn.create(selector);
+  var brief = function(selector, context) {
+    return new brief.prototype.create(selector, context);
   }
-  brief.fn = brief.prototype = {
+  brief.prototype = {
     length: 0,
+    isBrief: true,
     splice: function() {
       splice.apply(this, slice.call(arguments, 0));
       return this;
@@ -55,6 +57,23 @@
     },
     pop: function() {
       pop.apply(this);
+      return this;
+    },
+    toArray: function() {
+      return slice.call(this, 0);
+    },
+    empty: function() {
+      while(this.length > 0) {
+        this.pop();
+      }
+    },
+    filter: function(selector) {
+      var arr = filter.call(this, function(item) {
+        return match(item, selector);
+      });
+      this.empty();
+      push.apply(this, arr);
+      return this;
     },
     indexOf: function(selector) {
       var i = 0;
@@ -73,15 +92,11 @@
       this.forEach(function(item) {
         push.apply(arr, slice.call(item.querySelectorAll(selector), 0));
       });
-      while(this.length > 0) {
-        this.pop();
-      }
+      this.empty();
       push.apply(this, arr);
       return this;
     },
-    forEach: function() {
-      forEach.apply(this, slice.call(arguments, 0));
-    },
+    forEach: forEach,
     on: function(type, callback, delegatee, autoRemove) {
       var newFunction = callback;
       var me = this;
@@ -110,7 +125,7 @@
         }
       }
       type.forEach(function(type) {
-        forEach.call(this, function(element) {
+        this.forEach(function(element) {
           /*
            * If we aren't attempting to delegate the event,
            * we can just apply the listener to the element
@@ -144,7 +159,7 @@
         type = type.split(' ');
       }
       type.forEach(function(type) {
-        forEach.call(this, function(element) {
+        this.forEach(function(element) {
           /*
            * If the listener wasn't delegated, we can just remove it!
            */
@@ -179,15 +194,37 @@
     once: function(type, callback, delegatee) {
       var args = slice.call(arguments, 0);
       args.push(true);
-      return brief.fn.on.apply(this, args);
+      return brief.prototype.on.apply(this, args);
     }
   };
-  var create = brief.fn.create = function (selector) {
-    var r = document.querySelectorAll(selector);
-    push.apply(this, slice.call(r, 0));
+  var create = brief.prototype.create = function (selector, context) {
+    /*
+     * If we are dealing with a context and or a selector that are strings
+     */
+    if (typeof context == 'string' || !context && selector) {
+      var r = document.querySelectorAll(this.selector = context || selector);
+      push.apply(this, slice.call(r, 0));
+    }
+    /*
+     * If we just grabbed the elements related to the context
+     */
+    if (this.selector == context) {
+      this.find(selector);
+    /*
+     * If we are dealing with a context which is a brief object
+     */
+    } else if (context && context.isBrief) {
+      push.apply(this, context.find(selector));
+    /*
+     * If we are dealing with an array like object or an HTML element
+     */
+    } else if (typeof context == 'object') {
+      push.apply(this, context.length ? context : [context]);
+      this.find(selector);
+    }
     return this;
   }
-  create.prototype = brief.fn;
+  create.prototype = brief.prototype;
   window.brief = brief.bind(document);
   if (!window.$) {
     window.$ = brief.bind(document);
