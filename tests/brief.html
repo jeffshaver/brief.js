@@ -44,7 +44,7 @@
   </div>
   <div id="resultBox"></div>
   <script>
-      var resultBox = $('#resultBox');
+      var resultBox = $('#resultBox').get(0);
       var listener1 = function(event) {
         event.preventDefault();
         resultBox.innerHTML = 'this event was triggered by clicking an anchor tag, but the listener is actually on the body which is delegating it to the anchor tag.<br>' + resultBox.innerHTML;
