@@ -20,7 +20,7 @@
     module.exports = factory();
   } else {
     // Browser globals (root is window)
-    root.returnExports = factory();
+    root.brief = factory();
   }
 }(this, function (document, Element, Array) {
   'use strict';
