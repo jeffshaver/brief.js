@@ -44,7 +44,7 @@
   </div>
   <div id="resultBox"></div>
   <script>
-      var resultBox = $('#resultBox').get(0);
+      var resultBox = brief('#resultBox').get(0);
       var listener1 = function(event) {
         event.preventDefault();
         resultBox.innerHTML = 'this event was triggered by clicking an anchor tag, but the listener is actually on the body which is delegating it to the anchor tag.<br>' + resultBox.innerHTML;
@@ -60,18 +60,18 @@
       var listener4 = function(event) {
         resultBox.innerHTML = event.type + '<br>' + resultBox.innerHTML;
       }
-    $('body').on('mouseenter mouseleave', listener1, 'a');
-    $('#test').on('click', listener2);
-    $('.test').on('click', listener3);
-    $('body').on('mouseenter mouseleave', listener4);
-    $('body').once('mouseleave', function(event) {
+    brief('body').on('mouseenter mouseleave', listener1, 'a');
+    brief('#test').on('click', listener2);
+    brief('.test').on('click', listener3);
+    brief('body').on('mouseenter mouseleave', listener4);
+    brief('body').once('mouseleave', function(event) {
       resultBox.innerHTML = 'oh no! you moved your mouse off the body for the first time!!!<br>' + resultBox.innerHTML;
     });
-    $('#removeEventListeners').on('click', function() {
-      $('body').off('mouseenter mouseleave', listener1, 'a');
-      $('#test').off('click', listener2);
-      $('.test').off('click', listener3);
-      $('body').off('mouseenter mouseleave', listener4);
+    brief('#removeEventListeners').on('click', function() {
+      brief('body').off('mouseenter mouseleave', listener1, 'a');
+      brief('#test').off('click', listener2);
+      brief('.test').off('click', listener3);
+      brief('body').off('mouseenter mouseleave', listener4);
     });
   </script>
 </body>
