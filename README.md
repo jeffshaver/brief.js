@@ -1,7 +1,14 @@
 brief.js
 ========
 
-Small (~2.2k minified, <1k gzipped) wrapper overtop of the querySelectorAll method that enables chaining and simple event listening (and delegation).
+Small (~2.3k minified, ~1k gzipped) library used for DOM Selection and Event Listening.
+
+```
+// add a click listener to body that delegates to all the anchor tags.
+brief('body').on('click', function(event) {
+  // code to run
+}, 'a');
+```
 
 brief objects
 =============
@@ -76,13 +83,6 @@ The first optional argument is used if you want to delegate the event. This argu
 
 The last last optional argument can be used if you want to remove the event listener after the first time that it is called. However, a convenience method is added for you ```.once``` so that you can avoid using this altogether.
 
-
-The magical $
-=============
-
-If it isn't taken, brief.js will also take over the $ so that you can have an even shorter syntax!
-
-So any example below that uses ```brief``` could also use ```$``` as long as another library isn't using it.
 
 Grabbing Elements
 =================
