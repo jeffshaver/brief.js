@@ -7,7 +7,7 @@
  * https://github.com/jeffshaver/brief.js/blob/master/LICENSE
  */
 
-(function(document, Element, Array) {
+(function(document, Element, Array, global) {
   'use strict';
   // For delegated listeners, we will need to manage a list of callbacks
   var managedListeners = [];
@@ -225,8 +225,5 @@
     return this;
   }
   create.prototype = brief.prototype;
-  window.brief = brief.bind(document);
-  if (!window.$) {
-    window.$ = brief.bind(document);
-  }
-}(document, Element, Array));
+  global.brief = brief.bind(document);
+}(document, Element, Array, window));
