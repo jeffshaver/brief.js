@@ -47,7 +47,7 @@
       var resultBox = brief('#resultBox').get(0);
       var listener1 = function(event) {
         event.preventDefault();
-        resultBox.innerHTML = 'this event was triggered by clicking an anchor tag, but the listener is actually on the body which is delegating it to the anchor tag.<br>' + resultBox.innerHTML;
+        resultBox.innerHTML = 'this event was triggered by hovering or leaving an anchor tag, but the listener is actually on the body which is delegating it to the anchor tag.<br>' + resultBox.innerHTML;
       };
       var listener2 = function(event) {
         event.preventDefault();
@@ -65,7 +65,7 @@
     brief('.test').on('click', listener3);
     brief('body').on('mouseenter mouseleave', listener4);
     brief('body').once('mouseleave', function(event) {
-      resultBox.innerHTML = 'oh no! you moved your mouse off the body for the first time!!!<br>' + resultBox.innerHTML;
+      resultBox.innerHTML = 'oh no! you moved your mouse off the body for the first time!!! PS: this was not supposed to be removed by clicking the button<br>' + resultBox.innerHTML;
     });
     brief('#removeEventListeners').on('click', function() {
       brief('body').off('mouseenter mouseleave', listener1, 'a');
