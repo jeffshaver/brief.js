@@ -28,11 +28,10 @@
     /*
      * Browser globals (root is window)
      */
-    root.brief = factory();
+    root.brief = factory(document, Element, Array);
   }
 }(this, function(document, Element, Array) {
   'use strict';
-  return function() {
     /*
      * Main function that we will use to create brief object
      */
@@ -71,9 +70,9 @@
      * The brief function will create and return a new brief object (array-like)
      */
     var brief = function(selector, context) {
-      return new brief.prototype.create(selector, context);
+      return new brief.proto.create(selector, context);
     };
-    brief.prototype = {
+    brief.proto = brief.prototype = {
       length: 0,
       isBrief: true,
       splice: function() {
@@ -98,12 +97,11 @@
         return this;
       },
       filter: function(selector) {
-        var arr = filter.call(this, function(item) {
+        var newBrief = filter.call(this, function(item) {
           return match(item, selector);
         });
-        this.empty();
-        push.apply(this, arr);
-        return this;
+        newBrief.selector = this.selector;
+        return newBrief;
       },
       indexOf: function(selector) {
         var i = 0;
@@ -119,15 +117,22 @@
       },
       find: function(selector) {
         var newBrief = brief();
-        this.forEach(function(item) {
+        var length = this.length;
+        var i = 0;
+        for (; i < length; i++) {
           push.apply(newBrief, slice.call(item.querySelectorAll(selector), 0));
-        });
+        }
+        newBrief.selector = this.selctor;
         return newBrief;
       },
       forEach: forEach,
-      on: function(type, callback, delegatee, autoRemove) {
+      on: function(types, callback, delegatee, autoRemove) {
         var newFunction = callback;
         var me = this;
+        var meLen = me.length;
+        var i = 0;
+        var typesLen = types.length;
+        var element, type, j, listeners;
         if (typeof delegatee == 'boolean') {
           autoRemove = delegatee;
           delegatee = undefined;
@@ -137,8 +142,9 @@
          * at once, we need to split up the types if they
          * passed in a string
          */
-        if (typeof type == 'string') {
-          type = type.split(' ');
+        if (typeof types == 'string') {
+          types = types.split(' ');
+          typesLen = types.length;
         }
         /*
          * If we are attempting to autoRemove this listener
@@ -148,100 +154,151 @@
          */
         if (autoRemove) {
           newFunction = function(event) {
-            me.off(type, newFunction, false);
+            me.off(types, newFunction, false);
             callback.call(this, event);
           };
         }
-        type.forEach(function(type) {
+        /*
+         * We need to loop through each type that was passed
+         * in so that we apply all the listeners correctly
+         */
+        for (; i < typesLen; i++) {
+          /*
+           * We need to reset j and get the current type
+           */
+          j = 0;
+          type = types[i];
+          /*
+           * If we don't have a key in the object for this
+           * listener type, than we need to create it
+           */
           if (!managedListeners[type]) {
-            managedListeners[type] = [];
+              managedListeners[type] = [];
           }
-          this.forEach(function(element) {
+          /*
+           * For each listener type, we need to go through each element
+           * in the brief object and apply the listeners to each one
+           */
+          for (; j < meLen; j++) {
             /*
-             * If we aren't attempting to delegate the event,
-             * we can just apply the listener to the element
+             * Set the current element
+             */
+            element = me[j];
+            /*
+             * If we aren't trying to delegate this listener than we
+             * can just apply the listener to the element
              */
             if (!delegatee) {
               element.addEventListener(type, newFunction, false);
             /*
-             * If we are attempting to delegate the event,
-             * we are going to have to override the callback
-             * and then we will have to log this listener inside
-             * of managedListeners
+             * If we are delegating the listener, we have some work
+             * on our hands
              */
             } else {
+              /*
+               * We need to grab the current listeners
+               * that we are managing based on type
+               */
+              listeners = managedListeners[type];
+              /*
+               * We create a new function that only calls the callback
+               * that was passed in, if it matches the selector
+               */
               newFunction = function(event) {
                 if (match(event.srcElement, delegatee)) {
                   if (autoRemove) {
-                    me.off(type, callback, delegatee);
+                      me.off(type, callback, delegatee);
                   }
                   callback.call(this, event);
                 }
               };
+              /*
+               * To avoid creating extra variables and whatnot,
+               * we can store this extra data on the function itself
+               */
               newFunction._element = element;
               newFunction._delegatedTo = delegatee;
               newFunction._originalCallback = callback;
-              managedListeners[type][managedListeners[type].length || 0] = newFunction;
+              listeners[listeners.length || 0] = newFunction;
               element.addEventListener(type, newFunction, true);
             }
-          });
-        }, this);
+          }
+        }
       },
-      off: function(type, callback, delegatee) {
+      off: function(types, callback, delegatee) {
         var me = this;
         var i = 0;
-        var j;
-        var functions;
-        var len;
-        var func;
-        if (typeof type == 'string') {
-          type = type.split(' ');
+        var typesLen = types.length;
+        var meLen = me.length;
+        var type, element, j, len, listeners, func;
+        /*
+         * Since we want to support multiple listeners types
+         * at once, we need to split up the types if they
+         * passed in a string
+         */
+        if (typeof types == 'string') {
+          types = types.split(' ');
+          typesLen = types.length;
         }
-        type.forEach(function(type) {
-          this.forEach(function(element) {
+        /*
+         * For each listener type, we need to go through each element
+         * in the brief object and apply the listeners to each one
+         */
+        for (; i < typesLen; i++) {
+          /*
+           * We need to reset j and get the current type
+           */
+          j = 0;
+          type = types[i];
+          /*
+           * For each listener type, we need to go through each element
+           * in the brief object and apply the listeners to each one
+           */
+          for (; j < meLen; j++) {
             /*
-             * If the listener wasn't delegated, we can just remove it!
+             * Set the current element
+             */
+            element = me[j];
+            /*
+             * If the listener wasn't delegated, we can
+             * just remove the listener from the element
              */
             if (!delegatee) {
               element.removeEventListener(type, callback, false);
             /*
-             * But if it was we have some work to do
+             * If the listener was delegated, we have some
+             * cleanup to do to get rid of the listener
              */
             } else {
               /*
-               * We might as well keep a reference to the listeners array
-               * that we are going to look at
+               * We need to grab the current listeners
+               * that we are managing based on type
                */
-              functions = managedListeners[type];
-              len = functions.length;
-              for (; i < len; i++) {
-                func = functions[i];
-                j = 0;
-                /*
-                 * If the element for this listener isn't the one we
-                 * are looking for... skip that shit.
-                 */
+              listeners = managedListeners[type];
+              len = listeners.length;
+              /*
+               * We need to loop through the listeners and only remove it
+               * if the elements match and if it was delegated to the current
+               * delegatee or if they passed in '*' as the delegatee selector
+               */
+              while (len--) {
+                func = listeners[len];
                 if (func._element == element && (func._delegatedTo == delegatee || func._delegatedTo == '*')) {
                   element.removeEventListener(type, func, true);
-                  /*
-                   * Remove the function from the array
-                   * and decrement i at the same time
-                   */
-                  functions.splice(i--, 1);
-                  len = functions.length;
+                  listeners.splice(len, 1);
                 }
               }
             }
-          });
-        }, this);
+          }
+        }
       },
       once: function() {
         var args = slice.call(arguments, 0);
         args.push(true);
-        return brief.prototype.on.apply(this, args);
+        return brief.proto.on.apply(this, args);
       }
     };
-    create = brief.prototype.create = function(selector, context) {
+    create = brief.proto.create = function(selector, context) {
       /*
        * Sometimes it could be possible to want a blank brief object.
        * In those cases, we can skip all this
@@ -274,7 +331,6 @@
       }
       return this;
     };
-    create.prototype = brief.prototype;
-    return brief.bind(document);
-  };
-}(document, Element, Array)));
+    create.prototype = brief.proto;
+    return brief;
+}.bind(this, document, Element, Array)));
