@@ -70,9 +70,9 @@
      * The brief function will create and return a new brief object (array-like)
      */
     var brief = function(selector, context) {
-      return new brief.proto.create(selector, context);
+      return new brief.prototype.create(selector, context);
     };
-    brief.proto = brief.prototype = {
+    brief.prototype = {
       length: 0,
       isBrief: true,
       splice: function() {
@@ -295,10 +295,10 @@
       once: function() {
         var args = slice.call(arguments, 0);
         args.push(true);
-        return brief.proto.on.apply(this, args);
+        return brief.prototype.on.apply(this, args);
       }
     };
-    create = brief.proto.create = function(selector, context) {
+    create = brief.prototype.create = function(selector, context) {
       /*
        * Sometimes it could be possible to want a blank brief object.
        * In those cases, we can skip all this
@@ -331,6 +331,6 @@
       }
       return this;
     };
-    create.prototype = brief.proto;
+    create.prototype = brief.prototype;
     return brief;
 }.bind(this, document, Element, Array)));
