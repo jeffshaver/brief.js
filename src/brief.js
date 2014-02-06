@@ -83,7 +83,7 @@
         push.apply(this, slice.call(arguments, 0));
         return this;
       },
-      pop: function() {
+      removeLast: function() {
         pop.apply(this);
         return this;
       },
@@ -92,7 +92,7 @@
       },
       empty: function() {
         while(this.length > 0) {
-          this.pop();
+          this.removeLast();
         }
         return this;
       },
