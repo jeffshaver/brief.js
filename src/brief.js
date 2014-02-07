@@ -83,7 +83,7 @@
         push.apply(this, slice.call(arguments, 0));
         return this;
       },
-      removeLast: function() {
+      pop: function() {
         pop.apply(this);
         return this;
       },
@@ -92,7 +92,7 @@
       },
       empty: function() {
         while(this.length > 0) {
-          this.removeLast();
+          this.pop();
         }
         return this;
       },
@@ -123,6 +123,13 @@
           push.apply(newBrief, slice.call(item.querySelectorAll(selector), 0));
         }
         newBrief.selector = this.selctor;
+        return newBrief;
+      },
+      getChildren: function() {
+        var newBrief = brief();
+        for (var i = 0; i < this.length; i++) {
+          push.apply(newBrief, this[i].children);
+        }
         return newBrief;
       },
       forEach: forEach,

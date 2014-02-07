@@ -15,11 +15,9 @@ brief objects
 
 brief objects are array-like objects that are created when using brief.js. These objects hold elements and provide several methods to interact with them:
 
-```splice```, ```push```, ```removeLast```, ```toArray```, ```empty```, ```filter```, ```indexOf```, ```get```, ```find```, ```forEach```, ```on```, ```once``` and ```off`.
+```splice```, ```push```, ```pop```, ```toArray```, ```empty```, ```filter```, ```indexOf```, ```get```, ```find```, ```forEach```, ```on```, ```once``` and ```off`.
 
-splice, push and forEach are the original array methods applied to the brief object.
-
-removeLast is similar to pop for arrays, except that it returns the brief object instead of the new length.
+splice, push, pop and forEach are the original array methods applied to the brief object.
 
 toArray turns the current brief object into an array of the elements that are contained in it.
 
