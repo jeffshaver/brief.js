@@ -32,48 +32,145 @@
   }
 }(this, function(document, Element, Array) {
   'use strict';
-    /*
-     * Main function that we will use to create brief object
-     */
-    var create;
-    /*
-     * For delegated listeners, we will need to manage a list of callbacks
-     */
-    var managedListeners = {};
-    /*
-     * We need to save references to some prototype methods that
-     * we will need later
-     */
-    var arr = Array.prototype;
-    var el = Element.prototype;
-    var slice = arr.slice;
-    var splice = arr.splice;
-    var forEach = arr.forEach;
-    var push = arr.push;
-    var pop = arr.pop;
-    var filter = arr.filter;
-    var matchFunction = (
-      el.matchesSelector ||
-      el.msMatchesSelector ||
-      el.mozMatchesSelector ||
-      el.webkitMatchesSelector ||
-      el.oMatchesSelector
-    );
-    /*
-     * This function will use whatever matchesSelector function
-     * is available for that browser
-     */
-    var match = function(el, selector) {
-      return matchFunction.call(el, selector);
-    };
-    /*
-     * The brief function will create and return a new brief object (array-like)
-     */
-    var brief = function(selector, context) {
-      return new brief.prototype.create(selector, context);
-    };
+  /*
+   * Main function that we will use to create brief object
+   */
+  var create;
+  /*
+   * For delegated listeners, we will need to manage a list of callbacks
+   */
+  var managedListeners = {};
+  /*
+   * We need to save references to some prototype methods that
+   * we will need later
+   */
+  var arr = Array.prototype;
+  var el = Element.prototype;
+  var slice = arr.slice;
+  var splice = arr.splice;
+  var forEach = arr.forEach;
+  var push = arr.push;
+  var pop = arr.pop;
+  var filter = arr.filter;
+  var matchFunction = (
+    el.matchesSelector ||
+    el.msMatchesSelector ||
+    el.mozMatchesSelector ||
+    el.webkitMatchesSelector ||
+    el.oMatchesSelector
+  );
+  /*
+   * A couple of regexs that we will use
+   */
+  var idRegex = /^#[\w\d]*$/;
+  var classRegex = /^\.[\w\d]*$/;
+  var tagRegex = /^[\w\d]*$/;
+  /*
+   * This function will use whatever matchesSelector function
+   * is available for that browser
+   */
+  var match = function(el, selector) {
+    return matchFunction.call(el, selector);
+  };
+  /*
+   * The brief function will create and return a new brief object (array-like)
+   */
+  var brief = function(selector, context) {
+    return new brief.prototype.create(selector, context);
+  };
     brief.prototype = {
-      length: 0,
+      on: function() {
+        var newBrief = brief();
+        var elements = arguments[0];
+        var i = 0;
+        var length = elements.length;
+        if (elements.isBrief || typeof elements == 'object') {
+          for (; i < length; i++) {
+            newBrief.push(elements[i]);
+          }
+        } else {
+          newBrief.push(arguments[0]);
+        }
+        var args = [].slice.call(arguments, 1);
+        brief.fn.on.apply(newBrief, args);
+      },
+      off: function() {
+        var newBrief = brief();
+        var elements = arguments[0];
+        var i = 0;
+        var length = elements.length;
+        if (elements.isBrief || typeof elements == 'object') {
+          for (; i < length; i++) {
+            newBrief.push(elements[i]);
+          }
+        } else {
+          newBrief.push(arguments[0]);
+        }
+        var args = [].slice.call(arguments, 1);
+        brief.fn.off.apply(newBrief, args);
+      },
+      once: function() {
+        var newBrief = brief();
+        var elements = arguments[0];
+        var i = 0;
+        var length = elements.length;
+        if (elements.isBrief || typeof elements == 'object') {
+          for (; i < length; i++) {
+            newBrief.push(elements[i]);
+          }
+        } else {
+          newBrief.push(arguments[0]);
+        }
+        var args = [].slice.call(arguments, 1);
+        brief.fn.once.apply(newBrief, args);
+      }
+    };
+    
+    create = brief.prototype.create = function(selector, context) {
+      var r;
+      /*
+       * Sometimes it could be possible to want a blank brief object.
+       * In those cases, we can skip all this
+       */
+      if (selector || context) {
+        /*
+         * If we are dealing with a context and or a selector that are strings
+         */
+        if (typeof context == 'string' || !context && selector) {
+          this.selector = context || selector;
+          if (idRegex.test(this.selector)) {
+            r = [document.getElementById(this.selector.substring(1))];
+          } else if (classRegex.test(this.selector)) {
+            r = document.getElementsByClassName(this.selector.substring(1));
+          } else if (tagRegex.test(this.selector)) {
+            r = document.getElementsByTagName(this.selector);
+          } else {
+            r = document.querySelectorAll(this.selector);
+          }
+          push.apply(this, slice.call(r, 0));
+        }
+        /*
+         * If we just grabbed the elements related to the context
+         */
+        if (this.selector == context) {
+          this.find(selector);
+        /*
+         * If we are dealing with a context which is a brief object
+         */
+        } else if (context && context.isBrief) {
+          push.apply(this, context.find(selector));
+        /*
+         * If we are dealing with an array like object or an HTML element
+         */
+        } else if (typeof context == 'object') {
+          push.apply(this, context.length ? context : [context]);
+          this.find(selector);
+        }
+      }
+      return this;
+    };
+    create.prototype = {
+        length: 0,
       isBrief: true,
       splice: function() {
         splice.apply(this, slice.call(arguments, 0));
@@ -180,7 +277,7 @@
            * listener type, than we need to create it
            */
           if (!managedListeners[type]) {
-              managedListeners[type] = [];
+            managedListeners[type] = [];
           }
           /*
            * For each listener type, we need to go through each element
@@ -214,7 +311,7 @@
               newFunction = function(event) {
                 if (match(event.srcElement, delegatee)) {
                   if (autoRemove) {
-                      me.off(type, callback, delegatee);
+                    me.off(type, callback, delegatee);
                   }
                   callback.call(this, event);
                 }
@@ -226,7 +323,7 @@
               newFunction._element = element;
               newFunction._delegatedTo = delegatee;
               newFunction._originalCallback = callback;
-              listeners[listeners.length || 0] = newFunction;
+              listeners[listeners.length] = newFunction;
               element.addEventListener(type, newFunction, true);
             }
           }
@@ -290,7 +387,7 @@
                */
               while (len--) {
                 func = listeners[len];
-                if (func._element == element && (func._delegatedTo == delegatee || func._delegatedTo == '*')) {
+                if (func._element == element && (func._delegatedTo == delegatee || delegatee == '*')) {
                   element.removeEventListener(type, func, true);
                   listeners.splice(len, 1);
                 }
@@ -302,42 +399,12 @@
       once: function() {
         var args = slice.call(arguments, 0);
         args.push(true);
-        return brief.prototype.on.apply(this, args);
+        return brief.fn.on.apply(this, args);
       }
     };
-    create = brief.prototype.create = function(selector, context) {
-      /*
-       * Sometimes it could be possible to want a blank brief object.
-       * In those cases, we can skip all this
-       */
-      if (selector || context) {
-        /*
-         * If we are dealing with a context and or a selector that are strings
-         */
-        if (typeof context == 'string' || !context && selector) {
-          var r = document.querySelectorAll(this.selector = context || selector);
-          push.apply(this, slice.call(r, 0));
-        }
-        /*
-         * If we just grabbed the elements related to the context
-         */
-        if (this.selector == context) {
-          this.find(selector);
-        /*
-         * If we are dealing with a context which is a brief object
-         */
-        } else if (context && context.isBrief) {
-          push.apply(this, context.find(selector));
-        /*
-         * If we are dealing with an array like object or an HTML element
-         */
-        } else if (typeof context == 'object') {
-          push.apply(this, context.length ? context : [context]);
-          this.find(selector);
-        }
-      }
-      return this;
-    };
-    create.prototype = brief.prototype;
+    brief.fn = create.prototype;
+    brief.on = brief.prototype.on;
+    brief.off = brief.prototype.off;
+    brief.once = brief.prototype.once;
     return brief;
 }.bind(this, document, Element, Array)));
