@@ -39,7 +39,7 @@
   /*
    * For delegated listeners, we will need to manage a list of callbacks
    */
-  var managedListeners = {};
+  var managedListeners = [];
   /*
    * We need to save references to some prototype methods that
    * we will need later
@@ -170,14 +170,33 @@
       return this;
     };
     create.prototype = {
-        length: 0,
+      length: 0,
       isBrief: true,
       splice: function() {
         splice.apply(this, slice.call(arguments, 0));
         return this;
       },
       push: function() {
-        push.apply(this, slice.call(arguments, 0));
+        var args = slice.call(arguments, 0);
+        var i = 0;
+        var length = args.length;
+        var arg;
+        /*
+         * Loop over all arguments and push
+         * things into the brief object if
+         * the current argument is a brief object,
+         * an array of elements or an element
+         */
+        for (; i < length; i++) {
+          arg = args[i];
+          if (arg.isBrief) {
+            push.apply(this, arg.toArray());
+          } else if (arg.length) {
+            push.apply(this, arg);
+          } else {
+            push.call(this, arg);
+          }
+        }
         return this;
       },
       pop: function() {
@@ -229,7 +248,14 @@
         }
         return newBrief;
       },
-      forEach: forEach,
+      forEach: function(callback) {
+        var i = 0;
+        var length = this.length;
+        for (; i < length; i++) {
+          callback(this[i], i, this);
+        }
+        return this;
+      },
       on: function(types, callback, delegatee, autoRemove) {
         var newFunction = callback;
         var me = this;
@@ -256,7 +282,7 @@
          * automatically calls BriefObject.off and then
          * triggers the callback
          */
-        if (autoRemove) {
+        if (!delegatee && autoRemove) {
           newFunction = function(event) {
             me.off(types, newFunction, false);
             callback.call(this, event);
@@ -299,31 +325,33 @@
              * on our hands
              */
             } else {
-              /*
-               * We need to grab the current listeners
-               * that we are managing based on type
-               */
-              listeners = managedListeners[type];
-              /*
-               * We create a new function that only calls the callback
-               * that was passed in, if it matches the selector
-               */
-              newFunction = function(event) {
-                if (match(event.srcElement, delegatee)) {
-                  if (autoRemove) {
-                    me.off(type, callback, delegatee);
+              if (callback.__briefId === undefined) {
+                callback.__briefId = managedListeners.length;
+                /*
+                 * We create a new function that only calls the callback
+                 * that was passed in, if it matches the selector
+                 */
+                newFunction = function(event) {
+                  if (match(event.srcElement, delegatee)) {
+                    if (autoRemove) {
+                      me.off(type, callback, delegatee);
+                    }
+                    callback.call(this, event);
                   }
-                  callback.call(this, event);
-                }
-              };
+                };
+                newFunction._instances = [];
+                newFunction._originalCallback = callback;
+                managedListeners[callback.__briefId] = newFunction;
+              }
+              newFunction._instances.push({
+                element: element,
+                type: type,
+                delegatedTo: delegatee
+              });
               /*
                * To avoid creating extra variables and whatnot,
                * we can store this extra data on the function itself
                */
-              newFunction._element = element;
-              newFunction._delegatedTo = delegatee;
-              newFunction._originalCallback = callback;
-              listeners[listeners.length] = newFunction;
               element.addEventListener(type, newFunction, true);
             }
           }
@@ -334,7 +362,7 @@
         var i = 0;
         var typesLen = types.length;
         var meLen = me.length;
-        var type, element, j, len, listeners, func;
+        var type, element, j, len, listener, instances;
         /*
          * Since we want to support multiple listeners types
          * at once, we need to split up the types if they
@@ -374,22 +402,20 @@
              * cleanup to do to get rid of the listener
              */
             } else {
+
               /*
                * We need to grab the current listeners
                * that we are managing based on type
                */
-              listeners = managedListeners[type];
-              len = listeners.length;
-              /*
-               * We need to loop through the listeners and only remove it
-               * if the elements match and if it was delegated to the current
-               * delegatee or if they passed in '*' as the delegatee selector
-               */
+              listener = managedListeners[callback.__briefId];
+              element.removeEventListener(type, listener, true);
+              instances = listener._instances;
+              len =  instances.length;
               while (len--) {
-                func = listeners[len];
-                if (func._element == element && (func._delegatedTo == delegatee || delegatee == '*')) {
-                  element.removeEventListener(type, func, true);
-                  listeners.splice(len, 1);
+                if (instances[len].element == element &&
+                    instances[len].type == type &&
+                    instances[len].delegatedTo == delegatee) {
+                  listener._instances.splice(len, 1);
                 }
               }
             }
