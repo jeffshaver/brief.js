@@ -1,7 +1,7 @@
 brief.js
 ========
 
-Small (~2.4k minified, <1k gzipped) library used for DOM Selection and Event Listening.
+Small (~3.4k minified, <1.5k gzipped) library used for DOM Selection and Event Listening.
 
 ```
 // add a click listener to body that delegates to all the anchor tags.
@@ -10,6 +10,18 @@ brief('body').on('click', function(event) {
 }, 'a');
 ```
 
+the brief function
+==================
+
+The brief function takes in a ```selector``` and an optional ```context```. This function will get all the elements that match the selector that is passed in and return a brief object.
+
+the brief. methods
+==================
+
+There are three methods that you are able to call without envoking the actual brief function: ```.on```, ```.once``` and ```.off```.
+
+These functions are the same functions that are called on brief objects, however the element(s) that you are trying to add event listeners to must be passed as the first argument.
+
 brief objects
 =============
 
@@ -17,7 +29,9 @@ brief objects are array-like objects that are created when using brief.js. These
 
 ```splice```, ```push```, ```pop```, ```toArray```, ```empty```, ```filter```, ```indexOf```, ```get```, ```find```, ```forEach```, ```on```, ```once``` and ```off`.
 
-splice, push, pop and forEach are the original array methods applied to the brief object.
+splice, push, and pop are the original array methods applied to the brief object.
+
+forEach takes the current brief object and iterates over it with a traditional for loop (since forEach loops are so slow...), calling the passed callback for each item
 
 toArray turns the current brief object into an array of the elements that are contained in it.
 
@@ -46,19 +60,15 @@ IE9+ and any modern browser.
 We need to support 
 
 ```
-document.addEventListener
+addEventListener
 ```
 
 ```
-document.querySelectorAll
+querySelectorAll
 ```
 
 ```
-Array.prototype.forEach
-```
-
-```
-Element.prototype.matchesSelector // or one of it's prefixed verisons
+matchesSelector // or one of it's prefixed verisons
 ```
 
 
