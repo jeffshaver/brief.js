@@ -299,13 +299,6 @@
           j = 0;
           type = types[i];
           /*
-           * If we don't have a key in the object for this
-           * listener type, than we need to create it
-           */
-          if (!managedListeners[type]) {
-            managedListeners[type] = [];
-          }
-          /*
            * For each listener type, we need to go through each element
            * in the brief object and apply the listeners to each one
            */
