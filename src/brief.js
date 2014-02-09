@@ -79,104 +79,41 @@
     }
     return ret || slice.call(types, 0);
   };
+  var standardizeElements = function(elements) {
+    var newBrief = brief();
+    if (typeof elements == 'string') {
+      elements = brief(elements);
+    }
+    if (!elements.isBrief && elements.length) {
+      push.apply(newBrief, elements);
+    } else {
+      newBrief.push(elements);
+    }
+    return newBrief;
+  };
+  var on = function() {
+    var newBrief = standardizeElements(arguments[0]);
+    var args = slice.call(arguments, 1);
+    brief.prototype.on.apply(newBrief, args);
+  };
+  var off = function() {
+    var newBrief = standardizeElements(arguments[0]);
+    var args = slice.call(arguments, 1);
+    brief.prototype.off.apply(newBrief, args);
+  };
+  var once = function() {
+    var newBrief = standardizeElements(arguments[0]);
+    var args = slice.call(arguments, 1);
+    brief.prototype.once.apply(newBrief, args);
+  };
   /*
    * The brief function will create and return a new brief object (array-like)
    */
   var brief = function(selector, context) {
     return new brief.prototype.create(selector, context);
   };
-  brief.prototype = {
-    on: function() {
-      var newBrief = brief();
-      var elements = arguments[0];
-      var i = 0;
-      var length = elements.length;
-      if (elements.isBrief || typeof elements == 'object') {
-        for (; i < length; i++) {
-          newBrief.push(elements[i]);
-        }
-      } else {
-        newBrief.push(arguments[0]);
-      }
-      var args = [].slice.call(arguments, 1);
-      brief.fn.on.apply(newBrief, args);
-    },
-    off: function() {
-      var newBrief = brief();
-      var elements = arguments[0];
-      var i = 0;
-      var length = elements.length;
-      if (elements.isBrief || typeof elements == 'object') {
-        for (; i < length; i++) {
-          newBrief.push(elements[i]);
-        }
-      } else {
-        newBrief.push(arguments[0]);
-      }
-      var args = [].slice.call(arguments, 1);
-      brief.fn.off.apply(newBrief, args);
-    },
-    once: function() {
-      var newBrief = brief();
-      var elements = arguments[0];
-      var i = 0;
-      var length = elements.length;
-      if (elements.isBrief || typeof elements == 'object') {
-        for (; i < length; i++) {
-          newBrief.push(elements[i]);
-        }
-      } else {
-        newBrief.push(arguments[0]);
-      }
-      var args = [].slice.call(arguments, 1);
-      brief.fn.once.apply(newBrief, args);
-    }
-  };
   
-  create = brief.prototype.create = function(selector, context) {
-    var r;
-    /*
-     * Sometimes it could be possible to want a blank brief object.
-     * In those cases, we can skip all this
-     */
-    if (selector || context) {
-      /*
-       * If we are dealing with a context and or a selector that are strings
-       */
-      if (typeof context == 'string' || !context && selector) {
-        this.selector = context || selector;
-        if (idRegex.test(this.selector)) {
-          r = [document.getElementById(this.selector.substring(1))];
-        } else if (classRegex.test(this.selector)) {
-          r = document.getElementsByClassName(this.selector.substring(1));
-        } else if (tagRegex.test(this.selector)) {
-          r = document.getElementsByTagName(this.selector);
-        } else {
-          r = document.querySelectorAll(this.selector);
-        }
-        push.apply(this, slice.call(r, 0));
-      }
-      /*
-       * If we just grabbed the elements related to the context
-       */
-      if (this.selector == context) {
-        this.find(selector);
-      /*
-       * If we are dealing with a context which is a brief object
-       */
-      } else if (context && context.isBrief) {
-        push.apply(this, context.find(selector));
-      /*
-       * If we are dealing with an array like object or an HTML element
-       */
-      } else if (typeof context == 'object') {
-        push.apply(this, context.length ? context : [context]);
-        this.find(selector);
-      }
-    }
-    return this;
-  };
-  create.prototype = {
+  brief.prototype = {
     length: 0,
     isBrief: true,
     splice: function() {
@@ -419,12 +356,55 @@
     once: function() {
       var args = slice.call(arguments, 0);
       args.push(true);
-      return brief.fn.on.apply(this, args);
+      return brief.prototype.on.apply(this, args);
     }
   };
-  brief.fn = create.prototype;
-  brief.on = brief.prototype.on;
-  brief.off = brief.prototype.off;
-  brief.once = brief.prototype.once;
+  create = brief.prototype.create = function(selector, context) {
+    var r;
+    /*
+     * Sometimes it could be possible to want a blank brief object.
+     * In those cases, we can skip all this
+     */
+    if (selector || context) {
+      /*
+       * If we are dealing with a context and or a selector that are strings
+       */
+      if (typeof context == 'string' || !context && selector) {
+        this.selector = context || selector;
+        if (idRegex.test(this.selector)) {
+          r = [document.getElementById(this.selector.substring(1))];
+        } else if (classRegex.test(this.selector)) {
+          r = document.getElementsByClassName(this.selector.substring(1));
+        } else if (tagRegex.test(this.selector)) {
+          r = document.getElementsByTagName(this.selector);
+        } else {
+          r = document.querySelectorAll(this.selector);
+        }
+        push.apply(this, slice.call(r, 0));
+      }
+      /*
+       * If we just grabbed the elements related to the context
+       */
+      if (this.selector == context) {
+        this.find(selector);
+      /*
+       * If we are dealing with a context which is a brief object
+       */
+      } else if (context && context.isBrief) {
+        push.apply(this, context.find(selector));
+      /*
+       * If we are dealing with an array like object or an HTML element
+       */
+      } else if (typeof context == 'object') {
+        push.apply(this, context.length ? context : [context]);
+        this.find(selector);
+      }
+    }
+    return this;
+  };
+  create.prototype = brief.prototype;
+  brief.on = on;
+  brief.off = off;
+  brief.once = once;
   return brief;
 }.bind(this, document, Element, Array)));
