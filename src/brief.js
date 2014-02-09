@@ -72,358 +72,359 @@
   var match = function(el, selector) {
     return matchFunction.call(el, selector);
   };
+  var standardizeTypes = function(types) {
+    var ret;
+    if (typeof types == 'string') {
+      ret = types.split(' ');
+    }
+    return ret || slice.call(types, 0);
+  };
   /*
    * The brief function will create and return a new brief object (array-like)
    */
   var brief = function(selector, context) {
     return new brief.prototype.create(selector, context);
   };
-    brief.prototype = {
-      on: function() {
-        var newBrief = brief();
-        var elements = arguments[0];
-        var i = 0;
-        var length = elements.length;
-        if (elements.isBrief || typeof elements == 'object') {
-          for (; i < length; i++) {
-            newBrief.push(elements[i]);
-          }
-        } else {
-          newBrief.push(arguments[0]);
+  brief.prototype = {
+    on: function() {
+      var newBrief = brief();
+      var elements = arguments[0];
+      var i = 0;
+      var length = elements.length;
+      if (elements.isBrief || typeof elements == 'object') {
+        for (; i < length; i++) {
+          newBrief.push(elements[i]);
         }
-        var args = [].slice.call(arguments, 1);
-        brief.fn.on.apply(newBrief, args);
-      },
-      off: function() {
-        var newBrief = brief();
-        var elements = arguments[0];
-        var i = 0;
-        var length = elements.length;
-        if (elements.isBrief || typeof elements == 'object') {
-          for (; i < length; i++) {
-            newBrief.push(elements[i]);
-          }
-        } else {
-          newBrief.push(arguments[0]);
-        }
-        var args = [].slice.call(arguments, 1);
-        brief.fn.off.apply(newBrief, args);
-      },
-      once: function() {
-        var newBrief = brief();
-        var elements = arguments[0];
-        var i = 0;
-        var length = elements.length;
-        if (elements.isBrief || typeof elements == 'object') {
-          for (; i < length; i++) {
-            newBrief.push(elements[i]);
-          }
-        } else {
-          newBrief.push(arguments[0]);
-        }
-        var args = [].slice.call(arguments, 1);
-        brief.fn.once.apply(newBrief, args);
+      } else {
+        newBrief.push(arguments[0]);
       }
-    };
-    
-    create = brief.prototype.create = function(selector, context) {
-      var r;
-      /*
-       * Sometimes it could be possible to want a blank brief object.
-       * In those cases, we can skip all this
-       */
-      if (selector || context) {
-        /*
-         * If we are dealing with a context and or a selector that are strings
-         */
-        if (typeof context == 'string' || !context && selector) {
-          this.selector = context || selector;
-          if (idRegex.test(this.selector)) {
-            r = [document.getElementById(this.selector.substring(1))];
-          } else if (classRegex.test(this.selector)) {
-            r = document.getElementsByClassName(this.selector.substring(1));
-          } else if (tagRegex.test(this.selector)) {
-            r = document.getElementsByTagName(this.selector);
-          } else {
-            r = document.querySelectorAll(this.selector);
-          }
-          push.apply(this, slice.call(r, 0));
+      var args = [].slice.call(arguments, 1);
+      brief.fn.on.apply(newBrief, args);
+    },
+    off: function() {
+      var newBrief = brief();
+      var elements = arguments[0];
+      var i = 0;
+      var length = elements.length;
+      if (elements.isBrief || typeof elements == 'object') {
+        for (; i < length; i++) {
+          newBrief.push(elements[i]);
         }
-        /*
-         * If we just grabbed the elements related to the context
-         */
-        if (this.selector == context) {
-          this.find(selector);
-        /*
-         * If we are dealing with a context which is a brief object
-         */
-        } else if (context && context.isBrief) {
-          push.apply(this, context.find(selector));
-        /*
-         * If we are dealing with an array like object or an HTML element
-         */
-        } else if (typeof context == 'object') {
-          push.apply(this, context.length ? context : [context]);
-          this.find(selector);
+      } else {
+        newBrief.push(arguments[0]);
+      }
+      var args = [].slice.call(arguments, 1);
+      brief.fn.off.apply(newBrief, args);
+    },
+    once: function() {
+      var newBrief = brief();
+      var elements = arguments[0];
+      var i = 0;
+      var length = elements.length;
+      if (elements.isBrief || typeof elements == 'object') {
+        for (; i < length; i++) {
+          newBrief.push(elements[i]);
+        }
+      } else {
+        newBrief.push(arguments[0]);
+      }
+      var args = [].slice.call(arguments, 1);
+      brief.fn.once.apply(newBrief, args);
+    }
+  };
+  
+  create = brief.prototype.create = function(selector, context) {
+    var r;
+    /*
+     * Sometimes it could be possible to want a blank brief object.
+     * In those cases, we can skip all this
+     */
+    if (selector || context) {
+      /*
+       * If we are dealing with a context and or a selector that are strings
+       */
+      if (typeof context == 'string' || !context && selector) {
+        this.selector = context || selector;
+        if (idRegex.test(this.selector)) {
+          r = [document.getElementById(this.selector.substring(1))];
+        } else if (classRegex.test(this.selector)) {
+          r = document.getElementsByClassName(this.selector.substring(1));
+        } else if (tagRegex.test(this.selector)) {
+          r = document.getElementsByTagName(this.selector);
+        } else {
+          r = document.querySelectorAll(this.selector);
+        }
+        push.apply(this, slice.call(r, 0));
+      }
+      /*
+       * If we just grabbed the elements related to the context
+       */
+      if (this.selector == context) {
+        this.find(selector);
+      /*
+       * If we are dealing with a context which is a brief object
+       */
+      } else if (context && context.isBrief) {
+        push.apply(this, context.find(selector));
+      /*
+       * If we are dealing with an array like object or an HTML element
+       */
+      } else if (typeof context == 'object') {
+        push.apply(this, context.length ? context : [context]);
+        this.find(selector);
+      }
+    }
+    return this;
+  };
+  create.prototype = {
+    length: 0,
+    isBrief: true,
+    splice: function() {
+      splice.apply(this, slice.call(arguments, 0));
+      return this;
+    },
+    push: function() {
+      var args = slice.call(arguments, 0);
+      var i = 0;
+      var length = args.length;
+      var arg;
+      /*
+       * Loop over all arguments and push
+       * things into the brief object if
+       * the current argument is a brief object,
+       * an array of elements or an element
+       */
+      for (; i < length; i++) {
+        arg = args[i];
+        if (arg.isBrief) {
+          push.apply(this, arg.toArray());
+        } else if (arg.length) {
+          push.apply(this, arg);
+        } else {
+          push.call(this, arg);
         }
       }
       return this;
-    };
-    create.prototype = {
-      length: 0,
-      isBrief: true,
-      splice: function() {
-        splice.apply(this, slice.call(arguments, 0));
-        return this;
-      },
-      push: function() {
-        var args = slice.call(arguments, 0);
-        var i = 0;
-        var length = args.length;
-        var arg;
-        /*
-         * Loop over all arguments and push
-         * things into the brief object if
-         * the current argument is a brief object,
-         * an array of elements or an element
-         */
-        for (; i < length; i++) {
-          arg = args[i];
-          if (arg.isBrief) {
-            push.apply(this, arg.toArray());
-          } else if (arg.length) {
-            push.apply(this, arg);
-          } else {
-            push.call(this, arg);
-          }
+    },
+    pop: function() {
+      pop.apply(this);
+      return this;
+    },
+    toArray: function() {
+      return slice.call(this, 0);
+    },
+    empty: function() {
+      while(this.length > 0) {
+        this.pop();
+      }
+      return this;
+    },
+    filter: function(selector) {
+      var newBrief = filter.call(this, function(item) {
+        return match(item, selector);
+      });
+      newBrief.selector = this.selector;
+      return newBrief;
+    },
+    indexOf: function(selector) {
+      var i = 0;
+      for ( ; i < this.length; i++) {
+        if (match(this[i], selector)) {
+          return i;
         }
-        return this;
-      },
-      pop: function() {
-        pop.apply(this);
-        return this;
-      },
-      toArray: function() {
-        return slice.call(this, 0);
-      },
-      empty: function() {
-        while(this.length > 0) {
-          this.pop();
-        }
-        return this;
-      },
-      filter: function(selector) {
-        var newBrief = filter.call(this, function(item) {
-          return match(item, selector);
-        });
-        newBrief.selector = this.selector;
-        return newBrief;
-      },
-      indexOf: function(selector) {
-        var i = 0;
-        for ( ; i < this.length; i++) {
-          if (match(this[i], selector)) {
-            return i;
-          }
-        }
-        return -1;
-      },
-      get: function(index) {
-        return this[index];
-      },
-      find: function(selector) {
-        var newBrief = brief();
-        var length = this.length;
-        var i = 0;
-        for (; i < length; i++) {
-          push.apply(newBrief, slice.call(item.querySelectorAll(selector), 0));
-        }
-        newBrief.selector = this.selctor;
-        return newBrief;
-      },
-      getChildren: function() {
-        var newBrief = brief();
-        for (var i = 0; i < this.length; i++) {
-          push.apply(newBrief, this[i].children);
-        }
-        return newBrief;
-      },
-      forEach: function(callback) {
-        var i = 0;
-        var length = this.length;
-        for (; i < length; i++) {
-          callback(this[i], i, this);
-        }
-        return this;
-      },
-      on: function(types, callback, delegatee, autoRemove) {
-        var newFunction = callback;
-        var me = this;
-        var meLen = me.length;
-        var i = 0;
-        var typesLen = types.length;
-        var element, type, j, listeners;
-        if (typeof delegatee == 'boolean') {
-          autoRemove = delegatee;
-          delegatee = undefined;
-        }
-        /*
-         * Since we want to support multiple listeners types
-         * at once, we need to split up the types if they
-         * passed in a string
-         */
-        if (typeof types == 'string') {
-          types = types.split(' ');
-          typesLen = types.length;
-        }
-        /*
-         * If we are attempting to autoRemove this listener
-         * we will have to override the callback so that it
-         * automatically calls BriefObject.off and then
-         * triggers the callback
-         */
-        if (!delegatee && autoRemove) {
-          newFunction = function(event) {
-            me.off(types, newFunction, false);
-            callback.call(this, event);
-          };
-        }
-        /*
-         * We need to loop through each type that was passed
-         * in so that we apply all the listeners correctly
-         */
-        for (; i < typesLen; i++) {
-          /*
-           * We need to reset j and get the current type
-           */
-          j = 0;
-          type = types[i];
-          /*
-           * For each listener type, we need to go through each element
-           * in the brief object and apply the listeners to each one
-           */
-          for (; j < meLen; j++) {
-            /*
-             * Set the current element
-             */
-            element = me[j];
-            /*
-             * If we aren't trying to delegate this listener than we
-             * can just apply the listener to the element
-             */
-            if (!delegatee) {
-              element.addEventListener(type, newFunction, false);
-            /*
-             * If we are delegating the listener, we have some work
-             * on our hands
-             */
-            } else {
-              if (callback.__briefId === undefined) {
-                callback.__briefId = managedListeners.length;
-                /*
-                 * We create a new function that only calls the callback
-                 * that was passed in, if it matches the selector
-                 */
-                newFunction = function(event) {
-                  if (match(event.srcElement, delegatee)) {
-                    if (autoRemove) {
-                      me.off(type, callback, delegatee);
-                    }
-                    callback.call(this, event);
-                  }
-                };
-                newFunction._instances = [];
-                newFunction._originalCallback = callback;
-                managedListeners[callback.__briefId] = newFunction;
-              }
-              newFunction._instances.push({
-                element: element,
-                type: type,
-                delegatedTo: delegatee
-              });
-              /*
-               * To avoid creating extra variables and whatnot,
-               * we can store this extra data on the function itself
-               */
-              element.addEventListener(type, newFunction, true);
+      }
+      return -1;
+    },
+    get: function(index) {
+      return this[index];
+    },
+    find: function(selector) {
+      var newBrief = brief();
+      var length = this.length;
+      var i = 0;
+      for (; i < length; i++) {
+        push.apply(newBrief, slice.call(item.querySelectorAll(selector), 0));
+      }
+      newBrief.selector = this.selctor;
+      return newBrief;
+    },
+    getChildren: function() {
+      var newBrief = brief();
+      for (var i = 0; i < this.length; i++) {
+        push.apply(newBrief, this[i].children);
+      }
+      return newBrief;
+    },
+    forEach: function(callback) {
+      var i = 0;
+      var length = this.length;
+      for (; i < length; i++) {
+        callback(this[i], i, this);
+      }
+      return this;
+    },
+    on: function(types, callback, delegatee, autoRemove) {
+      var newFunction = callback;
+      var me = this;
+      var i = 0;
+      var element, type, j, listeners, typesLen, meLen;
+      if (typeof delegatee == 'boolean') {
+        autoRemove = delegatee;
+        delegatee = undefined;
+      }
+      /*
+       * Since we want to support multiple listeners types
+       * at once, we need to split up the types if they
+       * passed in a string
+       */
+      types = standardizeTypes(types);
+      /*
+       * If we are attempting to autoRemove this listener
+       * we will have to override the callback so that it
+       * automatically calls BriefObject.off and then
+       * triggers the callback
+       */
+      if (!delegatee && autoRemove) {
+        newFunction = function(event) {
+          me.off(types, newFunction, false);
+          callback.call(this, event);
+        };
+      }
+      /*
+       * If we are going to delegate this function, grab the 
+       * existing one or make a new function
+       */
+      if (delegatee) {
+        newFunction = managedListeners[callback.__briefId] || function(event) {
+          if (match(event.srcElement, delegatee)) {
+            if (autoRemove) {
+              me.off(type, callback, delegatee);
             }
+            callback.call(this, event);
           }
-        }
-      },
-      off: function(types, callback, delegatee) {
-        var me = this;
-        var i = 0;
-        var typesLen = types.length;
-        var meLen = me.length;
-        var type, element, j, len, listener, instances;
+        };
+      }
+      /*
+       * We need to loop through each type that was passed
+       * in so that we apply all the listeners correctly
+       */
+      for (typesLen = types.length; i < typesLen; i++) {
         /*
-         * Since we want to support multiple listeners types
-         * at once, we need to split up the types if they
-         * passed in a string
+         * We need to reset j and get the current type
          */
-        if (typeof types == 'string') {
-          types = types.split(' ');
-          typesLen = types.length;
-        }
+        j = 0;
+        type = types[i];
         /*
          * For each listener type, we need to go through each element
          * in the brief object and apply the listeners to each one
          */
-        for (; i < typesLen; i++) {
+        for (meLen = me.length; j < meLen; j++) {
           /*
-           * We need to reset j and get the current type
+           * Set the current element
            */
-          j = 0;
-          type = types[i];
+          element = me[j];
           /*
-           * For each listener type, we need to go through each element
-           * in the brief object and apply the listeners to each one
+           * If we aren't trying to delegate this listener than we
+           * can just apply the listener to the element
            */
-          for (; j < meLen; j++) {
+          if (!delegatee) {
+            element.addEventListener(type, newFunction, false);
+            continue;
+          }
+          /*
+           * If we haven't assigned a briefId to the callback,
+           * we need to do some extra stuff.
+           */
+          if (callback.__briefId === undefined) {
             /*
-             * Set the current element
+             * We need to assign a briefId as well as
+             * add some properties to the newFunction that
+             * we made to keep track of it.
              */
-            element = me[j];
-            /*
-             * If the listener wasn't delegated, we can
-             * just remove the listener from the element
-             */
-            if (!delegatee) {
-              element.removeEventListener(type, callback, false);
-            /*
-             * If the listener was delegated, we have some
-             * cleanup to do to get rid of the listener
-             */
-            } else {
-
-              /*
-               * We need to grab the current listeners
-               * that we are managing based on type
-               */
-              listener = managedListeners[callback.__briefId];
-              element.removeEventListener(type, listener, true);
-              instances = listener._instances;
-              len =  instances.length;
-              while (len--) {
-                if (instances[len].element == element &&
-                    instances[len].type == type &&
-                    instances[len].delegatedTo == delegatee) {
-                  listener._instances.splice(len, 1);
-                }
-              }
+            callback.__briefId = managedListeners.length;
+            newFunction._instances = [];
+            newFunction._originalCallback = callback;
+            managedListeners[callback.__briefId] = newFunction;
+          }
+          /*
+           * Everytime we do this for this callback,
+           * we need to push an instance to the 
+           * array on the function
+           */
+          newFunction._instances.push({
+            element: element,
+            type: type,
+            delegatedTo: delegatee
+          });
+          element.addEventListener(type, newFunction, true);
+        }
+      }
+    },
+    off: function(types, callback, delegatee) {
+      var me = this;
+      var i = 0;
+      var type, element, j, len, listener, instances, typesLen, meLen;
+      /*
+       * Since we want to support multiple listeners types
+       * at once, we need to split up the types if they
+       * passed in a string
+       */
+      types = standardizeTypes(types);
+      /*
+       * For each listener type, we need to go through each element
+       * in the brief object and apply the listeners to each one
+       */
+      for (typesLen = types.length ; i < typesLen; i++) {
+        /*
+         * We need to reset j and get the current type
+         */
+        j = 0;
+        type = types[i];
+        /*
+         * For each listener type, we need to go through each element
+         * in the brief object and apply the listeners to each one
+         */
+        for (meLen = me.length; j < meLen; j++) {
+          /*
+           * Set the current element
+           */
+          element = me[j];
+          /*
+           * If the listener wasn't delegated, we can
+           * just remove the listener from the element
+           */
+          if (!delegatee) {
+            element.removeEventListener(type, callback, false);
+            continue;
+          }
+          /*
+           * If we are dealing with a delegated listener,
+           * we need to get the function that this callback
+           * is linked to
+           */
+          listener = managedListeners[callback.__briefId];
+          element.removeEventListener(type, listener, true);
+          instances = listener._instances;
+          len =  instances.length;
+          while (len--) {
+            if (instances[len].element == element &&
+                instances[len].type == type &&
+                instances[len].delegatedTo == delegatee) {
+              listener._instances.splice(len, 1);
             }
           }
         }
-      },
-      once: function() {
-        var args = slice.call(arguments, 0);
-        args.push(true);
-        return brief.fn.on.apply(this, args);
       }
-    };
-    brief.fn = create.prototype;
-    brief.on = brief.prototype.on;
-    brief.off = brief.prototype.off;
-    brief.once = brief.prototype.once;
-    return brief;
+    },
+    once: function() {
+      var args = slice.call(arguments, 0);
+      args.push(true);
+      return brief.fn.on.apply(this, args);
+    }
+  };
+  brief.fn = create.prototype;
+  brief.on = brief.prototype.on;
+  brief.off = brief.prototype.off;
+  brief.once = brief.prototype.once;
+  return brief;
 }.bind(this, document, Element, Array)));
