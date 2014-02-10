@@ -71,11 +71,6 @@
   var match = function(el, selector) {
     return matchFunction.call(el, selector);
   };
-  /*
-   * Since we want to support multiple listeners types
-   * at once, we need to split up the types if they
-   * passed in a string
-   */
   var standardizeTypes = function(types) {
     var ret;
     if (typeof types == 'string') {
@@ -83,11 +78,6 @@
     }
     return ret || slice.call(types, 0);
   };
-  /*
-   * Function used to standardize element input
-   * so that a user can pass in various things
-   * to indicate elements
-   */
   var standardizeElements = function(elements) {
     var newBrief = brief();
     if (typeof elements == 'string') {
@@ -99,41 +89,6 @@
       newBrief.push(elements);
     }
     return newBrief;
-  };
-  /*
-   * When adding event listeners it is necessary to 
-   * use the provided callback or wrap it into another
-   * function so it is just easier to abstract that piece
-   * out into its own function
-   */
-  var standardizeCallback = function(me, callback, delegatee, autoRemove) {
-    /*
-     * If we are attempting to autoRemove this listener
-     * we will have to override the callback so that it
-     * automatically calls BriefObject.off and then
-     * triggers the callback
-     */
-    if (!delegatee && autoRemove) {
-      callback = function(event) {
-        me.off(types, newFunction, false);
-        callback.call(this, event);
-      };
-    }
-    /*
-     * If we are going to delegate this function, grab the 
-     * existing one or make a new function
-     */
-    if (delegatee) {
-      callback = managedListeners[callback.__briefId] || function(event) {
-        if (match(event.srcElement, delegatee)) {
-          if (autoRemove) {
-            me.off(type, callback, delegatee);
-          }
-          callback.call(this, event);
-        }
-      };
-    }
-    return callback;
   };
   var on = function() {
     var newBrief = standardizeElements(arguments[0]);
@@ -245,21 +200,46 @@
       return this;
     },
     on: function(types, callback, delegatee, autoRemove) {
+      var newFunction = callback;
       var me = this;
       var i = 0;
-      var newFunction, element, type, j, typesLen, meLen;
+      var element, type, j, typesLen, meLen;
       if (typeof delegatee == 'boolean') {
         autoRemove = delegatee;
         delegatee = undefined;
       }
       /*
-       * Standardize types based on input
+       * Since we want to support multiple listeners types
+       * at once, we need to split up the types if they
+       * passed in a string
        */
       types = standardizeTypes(types);
       /*
-       * Standardize callback based on input since
+       * If we are attempting to autoRemove this listener
+       * we will have to override the callback so that it
+       * automatically calls BriefObject.off and then
+       * triggers the callback
        */
-      newFunction = standardizeCallback(this, callback, delegatee, autoRemove);
+      if (!delegatee && autoRemove) {
+        newFunction = function(event) {
+          me.off(types, newFunction, false);
+          callback.call(this, event);
+        };
+      }
+      /*
+       * If we are going to delegate this function, grab the 
+       * existing one or make a new function
+       */
+      if (delegatee) {
+        newFunction = managedListeners[callback.__briefId] || function(event) {
+          if (match(event.srcElement, delegatee)) {
+            if (autoRemove) {
+              me.off(type, callback, delegatee);
+            }
+            callback.call(this, event);
+          }
+        };
+      }
       /*
        * We need to loop through each type that was passed
        * in so that we apply all the listeners correctly
