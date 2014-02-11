@@ -22,6 +22,13 @@ There are three methods that you are able to call without envoking the actual br
 
 These functions are the same functions that are called on brief objects, however the element(s) that you are trying to add event listeners to must be passed as the first argument.
 
+This means that while we do make our DOM Selection API available to you, you aren't being forced to use it! If you want to use the regular ```document.getElementById('id')``` and then pass that in, you can:
+
+```
+var elem = document.getElementById('id');
+brief.on(elem, 'click', callback);
+```
+
 brief objects
 =============
 
