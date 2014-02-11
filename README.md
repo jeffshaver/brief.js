@@ -27,6 +27,11 @@ This means that while we do make our DOM Selection API available to you, you are
 ```
 var elem = document.getElementById('id');
 brief.on(elem, 'click', callback);
+
+// or
+
+var elems = document.getElementsByClass('class');
+brief.on(elems, 'click', callback);
 ```
 
 brief objects
