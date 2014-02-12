@@ -1,7 +1,7 @@
 brief.js
 ========
 
-Small (~3.5k minified, <1.4k gzipped) library used for DOM Selection and Event Listening.
+Small (~3.8k minified, <1.5k gzipped) library used for DOM Selection and Event Listening.
 
 ```
 // add a click listener to body that delegates to all the anchor tags.
@@ -39,11 +39,9 @@ brief objects
 
 brief objects are array-like objects that are created when using brief.js. These objects hold elements and provide several methods to interact with them:
 
-```splice```, ```push```, ```pop```, ```toArray```, ```empty```, ```filter```, ```indexOf```, ```get```, ```find```, ```forEach```, ```on```, ```once``` and ```off`.
+```splice```, ```push```, ```pop```, ```toArray```, ```empty```, ```filter```, ```indexOf```, ```get```, ```find```, ```forEach```, ```getOffsets```, ```on```, ```once``` and ```off`.
 
 splice, push, and pop are the original array methods applied to the brief object.
-
-forEach takes the current brief object and iterates over it with a traditional for loop (since forEach loops are so slow...), calling the passed callback for each item
 
 toArray turns the current brief object into an array of the elements that are contained in it.
 
@@ -55,7 +53,11 @@ indexOf takes in a selector and looks for an element that matches that selector.
 
 get takes in an index and returns the element at that position.
 
-find takes in a selector and queries for elements within the context,
+find takes in a selector and queries for elements within the context
+
+forEach takes the current brief object and iterates over it with a traditional for loop (since forEach loops are so slow...), calling the passed callback for each item
+
+getOffsets gets the offsets (top/left) of the elements in the brief object. If there are 0 elements in the brief object, it returns null. If there is one, it returns an object with a top and left property. If there are multiple elements in the brief object, it will return an array of objects with top and left properties.
 
 on takes four arguemnts (two required and two optional). it takes in a string of event types or an array of event types, a callback, and one of both of the following: a delegation selector and/or whether to automatically remove the listener after the first call and adds event listeners.
 

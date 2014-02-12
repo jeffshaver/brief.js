@@ -136,7 +136,7 @@
       };
     }
     return newFunction;
-  }
+  };
   var on = function() {
     var newBrief = standardizeElements(arguments[0]);
     var args = slice.call(arguments, 1);
@@ -159,6 +159,13 @@
     return new brief.prototype.create(selector, context);
   };
   
+  /*
+   * For some of these methods, we implement
+   * the call the Arrays version of the method.
+   * However, we wrap it in another function so
+   * that we can return the object afterward
+   * to enable method chaining.
+   */
   brief.prototype = {
     length: 0,
     isBrief: true,
@@ -245,6 +252,22 @@
         callback(this[i], i, this);
       }
       return this;
+    },
+    getOffsets: function() {
+      var offsets = [];
+      console.log(this.length);
+      console.log(this);
+      if (!this.length || this[0] == null) {
+        return null;
+      }
+      this.forEach(function(item) {
+        var offset = item.getBoundingClientRect();
+        offsets.push({
+          top: offset.top,
+          left: offset.left
+        });
+      });
+      return offsets.length == 1 ? offsets[0] : offsets;
     },
     on: function(types, callback, delegatee, autoRemove) {
       var newFunction = callback;
@@ -402,7 +425,12 @@
         } else {
           r = document.querySelectorAll(this.selector);
         }
-        push.apply(this, slice.call(r, 0));
+        /*
+         * If the query didn't return null
+         */
+        if (r.length && r[0] != null) {
+          push.apply(this, slice.call(r, 0));
+        }
       }
       /*
        * If we just grabbed the elements related to the context
