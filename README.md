@@ -39,7 +39,7 @@ brief objects
 
 brief objects are array-like objects that are created when using brief.js. These objects hold elements and provide several methods to interact with them:
 
-```splice```, ```push```, ```pop```, ```toArray```, ```empty```, ```filter```, ```indexOf```, ```get```, ```find```, ```forEach```, ```getOffsets```, ```on```, ```once``` and ```off`.
+```splice```, ```push```, ```pop```, ```toArray```, ```empty```, ```filter```, ```indexOf```, ```get```, ```find```, ```forEach```, ```getOffsets```, ```on```, ```once``` and ```off```.
 
 splice, push, and pop are the original array methods applied to the brief object.
 
