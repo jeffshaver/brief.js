@@ -255,8 +255,6 @@
     },
     getOffsets: function() {
       var offsets = [];
-      console.log(this.length);
-      console.log(this);
       if (!this.length || this[0] == null) {
         return null;
       }
