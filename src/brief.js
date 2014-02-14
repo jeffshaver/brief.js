@@ -23,14 +23,16 @@
      * only CommonJS-like enviroments that support module.exports,
      * like Node.
      */
-    module.exports = factory();
+    module.exports = global.document ? factory() : function() {
+      throw new Error('brief requires a document to run');
+    };
   } else {
     /*
      * Browser globals (root is window)
      */
-    root.brief = factory(document, Element, Array);
+    root.brief = factory();
   }
-}(this, function(document, Element, Array) {
+}(this, function(d, e, a) {
   'use strict';
   /*
    * Main function that we will use to create brief object
@@ -44,8 +46,8 @@
    * We need to save references to some prototype methods that
    * we will need later
    */
-  var arr = Array.prototype;
-  var el = Element.prototype;
+  var arr = a.prototype;
+  var el = e.prototype;
   var slice = arr.slice;
   var splice = arr.splice;
   var push = arr.push;
@@ -137,6 +139,13 @@
     }
     return newFunction;
   };
+  /*
+   * We don't want to force people to use the DOM Selection
+   * API, so we are going to use these methods to allow them
+   * to pass selectors/elements/nodelists/etc... into methods
+   * attached to the brief funciton that will let them use
+   * the eventing API without the selection API
+   */
   var on = function() {
     var newBrief = standardizeElements(arguments[0]);
     var args = slice.call(arguments, 1);
@@ -209,11 +218,16 @@
       }
       return this;
     },
-    filter: function(selector) {
-      var newBrief = filter.call(this, function(item) {
-        return match(item, selector);
-      });
-      newBrief.selector = this.selector;
+    filter: function(filterFn) {
+      var newBrief, selector;
+      if (typeof filterFn == 'string') {
+        selector = filterFn;
+        filterFn = function(item) {
+          return match(item, selector);
+        };
+      }
+      newBrief = filter.call(this, filterFn);
+      newBrief.selector = (selector ? selector : this.selector);
       return newBrief;
     },
     indexOf: function(selector) {
@@ -415,13 +429,13 @@
       if (typeof context == 'string' || !context && selector) {
         this.selector = context || selector;
         if (idRegex.test(this.selector)) {
-          r = [document.getElementById(this.selector.substring(1))];
+          r = [d.getElementById(this.selector.substring(1))];
         } else if (classRegex.test(this.selector)) {
-          r = document.getElementsByClassName(this.selector.substring(1));
+          r = d.getElementsByClassName(this.selector.substring(1));
         } else if (tagRegex.test(this.selector)) {
-          r = document.getElementsByTagName(this.selector);
+          r = d.getElementsByTagName(this.selector);
         } else {
-          r = document.querySelectorAll(this.selector);
+          r = d.querySelectorAll(this.selector);
         }
         /*
          * If the query didn't return null
