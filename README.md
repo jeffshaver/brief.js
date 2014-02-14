@@ -47,7 +47,7 @@ toArray turns the current brief object into an array of the elements that are co
 
 empty removes all elements from the object
 
-filter takes a selector and removes all elements that don't match the selector from the object
+filter takes a filter function or a string selector and removes all elements that don't match
 
 indexOf takes in a selector and looks for an element that matches that selector.
 
