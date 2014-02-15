@@ -79,11 +79,7 @@
    * need to standardize the input
    */
   var standardizeTypes = function(types) {
-    var ret;
-    if (typeof types == 'string') {
-      ret = types.split(' ');
-    }
-    return ret || slice.call(types, 0);
+    return typeof types == 'string' ? types.split(' ') : slice.call(types, 0);
   };
   /*
    * For the on/off/once methods that are attached
@@ -124,7 +120,7 @@
       };
     }
     /*
-     * If we are going to delegate this function, grab the 
+     * If we are going to delegate this function, grab the
      * existing one or make a new function
      */
     if (delegatee) {
@@ -167,7 +163,7 @@
   var brief = function(selector, context) {
     return new brief.prototype.create(selector, context);
   };
-  
+
   /*
    * For some of these methods, we implement
    * the call the Arrays version of the method.
@@ -342,7 +338,7 @@
           }
           /*
            * Everytime we do this for this callback,
-           * we need to push an instance to the 
+           * we need to push an instance to the
            * array on the function
            */
           newFunction._instances.push({
