@@ -10,6 +10,15 @@ brief('body').on('click', function(event) {
 }, 'a');
 ```
 
+Why!?!?
+=======
+
+I wanted to make an incredibly lightweight, focused library that does what it does well. I don't want it to have frivilous extras. I also didn't want to force developers into directly using my DOM selection API. 
+
+brief.js allows you to use both its DOM Selection API and Event Listening API seemlessly together or completely apart.
+
+A lot of libraries out there have API that allow DOM Selection and event listening. But most of them also are incredibly large and require you to use both the selection and event listening api. I don't want to force you into that.
+
 the brief function
 ==================
 
@@ -18,7 +27,7 @@ The brief function takes in a ```selector``` and an optional ```context```. This
 the brief. methods
 ==================
 
-There are three methods that you are able to call without envoking the actual brief function: ```.on```, ```.once``` and ```.off```.
+There are three methods that you are able to call without envoking the actual brief function: ```.on```, ```.onAll```, ```.once```, ```.onceAll```, ```.off``` and ```offAll```.
 
 These functions are the same functions that are called on brief objects, however the element(s) that you are trying to add event listeners to must be passed as the first argument.
 
@@ -39,7 +48,7 @@ brief objects
 
 brief objects are array-like objects that are created when using brief.js. These objects hold elements and provide several methods to interact with them:
 
-```splice```, ```push```, ```pop```, ```toArray```, ```empty```, ```filter```, ```indexOf```, ```get```, ```find```, ```forEach```, ```getOffsets```, ```on```, ```once``` and ```off```.
+```splice```, ```push```, ```pop```, ```toArray```, ```empty```, ```filter```, ```indexOf```, ```get```, ```find```, ```forEach```, ```getOffsets```, ```on```, ```onAll```, ```once```, ```onceAll```, ```off``` and ```offAll```.
 
 splice, push, and pop are the original array methods applied to the brief object.
 
@@ -59,11 +68,17 @@ forEach takes the current brief object and iterates over it with a traditional f
 
 getOffsets gets the offsets (top/left) of the elements in the brief object. If there are 0 elements in the brief object, it returns null. If there is one, it returns an object with a top and left property. If there are multiple elements in the brief object, it will return an array of objects with top and left properties.
 
-on takes four arguemnts (two required and two optional). it takes in a string of event types or an array of event types, a callback, and one of both of the following: a delegation selector and/or whether to automatically remove the listener after the first call and adds event listeners.
+on takes four arguemnts (two required and two optional). it takes in an event type, a callback, and one of both of the following: a delegation selector and/or whether to automatically remove the listener after the first call and adds event listeners.
+
+onAll takes in an array of event types and defers to the on method.
 
 once is a convenience method that applies the .on method with the last parameter as true.
 
-off takes in a string of event types or an array of event types, a callback and (optional) delegation selector and removes the event listeners.
+onceAll is a convenience method that applies the .onAll method with the last parameter as true
+
+off takes in an event type, a callback and (optional) delegation selector and removes the event listeners.
+
+offAll takes an array of event types and defers to the off method.
 
 
 Browser Support
@@ -99,7 +114,7 @@ The ```.on``` method is chainable. It will return the Element or NodeList that i
 
 The first two arguments are required and the last 2 are optional.
 
-type can be a string of event types (space-separated) or an array or event types
+type can be a string. It represents an event type
 
 callback must be a function. It will be passed an event object
 
