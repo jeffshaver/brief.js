@@ -76,14 +76,6 @@
     return matchFunction.call(el, selector);
   };
   /*
-   * In order to allow devs to pass in different
-   * ways to indicate types (strings/arrays), we
-   * need to standardize the input
-   */
-  var standardizeTypes = function(types) {
-    return typeof types == 'string' ? types.split(' ') : slice.call(types, 0);
-  };
-  /*
    * For the on/off/once methods that are attached
    * to the brief function, we need to be able
    * to standardize the input of the elements
@@ -143,15 +135,30 @@
     var args = slice.call(arguments, 1);
     brief.prototype.on.apply(newBrief, args);
   };
+  var onAll = function() {
+    var newBrief = standardizeElements(arguments[0]);
+    var args = slice.call(arguments, 1);
+    brief.prototype.onAll.apply(newBrief, args);
+  };
   var off = function() {
     var newBrief = standardizeElements(arguments[0]);
     var args = slice.call(arguments, 1);
     brief.prototype.off.apply(newBrief, args);
   };
+  var offAll = function() {
+    var newBrief = standardizeElements(arguments[0]);
+    var args = slice.call(arguments, 1);
+    brief.prototype.offAll.apply(newBrief, args);
+  };
   var once = function() {
     var newBrief = standardizeElements(arguments[0]);
     var args = slice.call(arguments, 1);
     brief.prototype.once.apply(newBrief, args);
+  };
+  var onceAll = function() {
+    var newBrief = standardizeElements(arguments[0]);
+    var args = slice.call(arguments, 1);
+    brief.prototype.onceAll.apply(newBrief, args);
   };
   /*
    * The brief function will create and return a new brief object (array-like)
@@ -270,18 +277,14 @@
       });
       return offsets.length == 1 ? offsets[0] : offsets;
     },
-    on: function(types, callback, delegatee, autoRemove) {
+    on: function(type, callback, delegatee, autoRemove) {
       var newFunction = callback;
       var me = this;
-      var element, type, i, j;
+      var element, i;
       if (typeof delegatee == 'boolean') {
         autoRemove = delegatee;
         delegatee = undefined;
       }
-      /*
-       * Standardize types input
-       */
-      types = standardizeTypes(types);
       /*
        * If we are attempting to autoRemove this listener
        * we will have to override the callback so that it
@@ -290,153 +293,139 @@
        */
       if (!delegatee && autoRemove) {
         newFunction = function(event) {
-          me.off(types, newFunction);
+          me.off(type, newFunction);
           callback.call(this, event);
         };
       }
       /*
-       * We need to loop through each type that was passed
-       * in so that we apply all the listeners correctly
-       */
-      for (i = 0; i < types.length; i++) {
-        /*
-         * We need to reset j and get the current type
-         */
-        type = types[i];
-        /*
-         * For each listener type, we need to go through each element
-         * in the brief object and apply the listeners to each one
-         */
-        for (j = 0; j < me.length; j++) {
-          /*
-           * Set the current element
-           */
-          element = me[j];
-          /*
-           * If we aren't trying to delegate this listener than we
-           * can just apply the listener to the element
-           */
-          if (!delegatee) {
-            if (!managedElements[type]) {
-              managedElements[type] = [];
-              managedListeners[type] = [];
-              document.addEventListener(type, managedListener, true);
-            }
-            managedElements[type].push(element);
-            managedListeners[type].push(newFunction);
-            continue;
-          }
-
-          /*
-           * If we haven't gotten a listener for this type
-           * yet, lets create an array to hold listeners
-           * for this type and create a listener on the document
-           * to handle all the events
-           */
-
-          if (!delegatedListeners[type]) {
-            delegatedListeners[type] = [];
-            document.addEventListener(type, delegatedListener, true);
-          }
-          /*
-           * We need to push an instance of this type into
-           * the array so we can invoke/remove it later
-           */
-          delegatedListeners[type].push({
-            element: element,
-            delegatedTo: delegatee,
-            callback: callback
-          });
-        }
-      }
-    },
-    off: function(types, callback, delegatee) {
-      var me = this;
-      var type, elements, element, len, listeners, listener, index, i, j;
-      /*
-       * Since we want to support multiple listeners types
-       * at once, we need to split up the types if they
-       * passed in a string
-       */
-      types = standardizeTypes(types);
-      /*
        * For each listener type, we need to go through each element
        * in the brief object and apply the listeners to each one
        */
+      for (i = 0; i < me.length; i++) {
+        /*
+         * Set the current element
+         */
+        element = me[i];
+        /*
+         * If we aren't trying to delegate this listener than we
+         * can just apply the listener to the element
+         */
+        if (!delegatee) {
+          if (!managedElements[type]) {
+            managedElements[type] = [];
+            managedListeners[type] = [];
+            document.addEventListener(type, managedListener, true);
+          }
+          managedElements[type].push(element);
+          managedListeners[type].push(newFunction);
+          continue;
+        }
+
+        /*
+         * If we haven't gotten a listener for this type
+         * yet, lets create an array to hold listeners
+         * for this type and create a listener on the document
+         * to handle all the events
+         */
+
+        if (!delegatedListeners[type]) {
+          delegatedListeners[type] = [];
+          document.addEventListener(type, delegatedListener, true);
+        }
+        /*
+         * We need to push an instance of this type into
+         * the array so we can invoke/remove it later
+         */
+        delegatedListeners[type].push({
+          element: element,
+          delegatedTo: delegatee,
+          callback: callback
+        });
+      }
+    },
+    onAll: function(types, callback, delegatee, autoRemove) {
+      var i;
       for (i = 0; i < types.length; i++) {
+        this.on(types[i], callback, delegatee, autoRemove);
+      }
+    },
+    off: function(type, callback, delegatee) {
+      var me = this;
+      var elements, element, len, listeners, listener, index, i;
+      for (i = 0; i < me.length; i++) {
         /*
-         * We need to reset j and get the current type
+         * Set the current element
          */
-        j = 0;
-        type = types[i];
+        element = me[i];
         /*
-         * For each listener type, we need to go through each element
-         * in the brief object and apply the listeners to each one
+         * If the listener wasn't delegated, we can
+         * just remove the listener from the element
          */
-        for (j = 0; j < me.length; j++) {
+        if (!delegatee) {
+          listeners = managedListeners[type];
+          elements = managedElements[type];
+          index = listeners.indexOf(callback);
           /*
-           * Set the current element
+           * While we can still find a match 
+           * in the listeners array, keep splicing
            */
-          element = me[j];
-          /*
-           * If the listener wasn't delegated, we can
-           * just remove the listener from the element
-           */
-          if (!delegatee) {
-            listeners = managedListeners[type];
-            elements = managedElements[type];
-            index = listeners.indexOf(callback);
-            /*
-             * While we can still find a match 
-             * in the listeners array, keep splicing
-             */
-            while(index !== -1) {
-              if (element === elements[index]) {
-                elements.splice(index, 1);
-                listeners.splice(index, 1);
-                /*
-                 * Since we spliced out an item, we need to
-                 * decrease our current position so we can
-                 * correctly calculate the next index
-                 */
-                index--;
-              }
+          while(index !== -1) {
+            if (element === elements[index]) {
+              elements.splice(index, 1);
+              listeners.splice(index, 1);
               /*
-               * We can now look for the next index (if any)
+               * Since we spliced out an item, we need to
+               * decrease our current position so we can
+               * correctly calculate the next index
                */
-              index = listeners.indexOf(callback, index+1);
+              index--;
             }
-            continue;
+            /*
+             * We can now look for the next index (if any)
+             */
+            index = listeners.indexOf(callback, index+1);
           }
-          /*
-           * If we are dealing with a delegated listener,
-           * we need to get the listeners for this type
-           */
-          listeners = delegatedListeners[type];
-          len = listeners.length;
-          /*
-           * Loop through the listeners for this type
-           * and remove them if the element, delegatedSelector
-           * and callback match what we have stored
-           */
-          while (len--) {
-            listener = listeners[len];
-            if (listener.element === element &&
-                listener.delegatedTo === delegatee &&
-                listener.callback === callback) {
-              listeners.splice(len, 1);
-            }
-          }
-          if (!listeners.length) {
-            document.removeEventListener(type, delegatedListener, true);
+          continue;
+        }
+        /*
+         * If we are dealing with a delegated listener,
+         * we need to get the listeners for this type
+         */
+        listeners = delegatedListeners[type];
+        len = listeners.length;
+        /*
+         * Loop through the listeners for this type
+         * and remove them if the element, delegatedSelector
+         * and callback match what we have stored
+         */
+        while (len--) {
+          listener = listeners[len];
+          if (listener.element === element &&
+              listener.delegatedTo === delegatee &&
+              listener.callback === callback) {
+            listeners.splice(len, 1);
           }
         }
+        if (!listeners.length) {
+          document.removeEventListener(type, delegatedListener, true);
+        }
+      }
+    },
+    offAll: function(types, callback, delegatee) {
+      var i;
+      for (i = 0; i < types.length; i++) {
+        this.off(types[i], callback, delegatee);
       }
     },
     once: function() {
       var args = slice.call(arguments, 0);
       args.push(true);
       return brief.prototype.on.apply(this, args);
+    },
+    onceAll: function() {
+      var args = slice.call(arguments, 0);
+      args.push(true);
+      return brief.prototype.onAll.apply(this, args);
     }
   };
   create = brief.prototype.create = function(selector, context) {
@@ -489,7 +478,10 @@
   };
   create.prototype = brief.prototype;
   brief.on = on;
+  brief.onAll = onAll;
   brief.off = off;
+  brief.offAll = offAll;
   brief.once = once;
+  brief.onceAll = onceAll;
   return brief;
 }.bind(this, document, Element, Array)));
