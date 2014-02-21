@@ -32,7 +32,7 @@
      */
     root.brief = factory();
   }
-}(this, function(d, e, a) {
+}(this, function factory(d, e, a) {
   'use strict';
   /*
    * Main function that we will use to create brief object
@@ -476,6 +476,19 @@
     }
     return this;
   };
+  
+  brief.extend = function(extras) {
+    var b = factory(d, e, a);
+    for (var key in extras) {
+      if (Object.hasOwnProperty.call(extras, key)) {
+        b[key] = extras[key];
+        b.prototype[key] = extras[key];
+      }
+    }
+    
+    return b;
+  }
+  
   create.prototype = brief.prototype;
   brief.on = on;
   brief.onAll = onAll;
