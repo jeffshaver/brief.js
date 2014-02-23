@@ -1,7 +1,7 @@
 brief.js
 ========
 
-Small (~4k minified, ~1.6k gzipped) library used for DOM Selection and Event Listening.
+Small (~5k minified, ~1.9k gzipped) library used for DOM Selection and Event Listening.
 
 ```
 // add a click listener to body that delegates to all the anchor tags.
@@ -229,3 +229,8 @@ function handler(event) {
 brief('body').on('click', handler, 'a');
 brief('body').off('click', handler, 'a');
 ```
+
+Plugins
+=======
+
+For an example of how to write plugins, please see any of the core-plugin modules [here](https://github.com/jeffshaver/brief.js/tree/master/src/core-plugins/).
