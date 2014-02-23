@@ -19,9 +19,8 @@
     define([], factory);
   } else if (typeof exports == 'object') {
     /*
-     * Node. Does not work with strict CommonJS, but
-     * only CommonJS-like enviroments that support module.exports,
-     * like Node.
+     * We need a document to use brief, so throw an error if we
+     * are in environments likes node
      */
     module.exports = global.document ? factory() : function() {
       throw new Error('brief requires a document to run');
@@ -51,6 +50,8 @@
   var arr = a.prototype;
   var el = e.prototype;
   var slice = arr.slice;
+  var forEach = arr.forEach;
+  var map = arr.map;
   var splice = arr.splice;
   var push = arr.push;
   var pop = arr.pop;
@@ -74,6 +75,9 @@
    */
   var match = function(el, selector) {
     return matchFunction.call(el, selector);
+  };
+  var getVarType = function(v) {
+    return Object.prototype.toString.call(v).replace(/^\[\w*\s|\]/g,'');
   };
   /*
    * For the on/off/once methods that are attached
@@ -257,25 +261,23 @@
       return newBrief;
     },
     forEach: function(callback) {
-      var i;
-      for (i = 0; i < this.length; i++) {
-        callback(this[i], i, this);
-      }
+      forEach.call(this, callback);
       return this;
     },
+    map: function(callback) {
+      return map.call(this, callback);
+    },
     getOffsets: function() {
-      var offsets = [];
       if (!this.length || this[0] == null) {
         return null;
       }
-      this.forEach(function(item) {
+      return this.map(function(item) {
         var offset = item.getBoundingClientRect();
-        offsets.push({
+        return {
           top: offset.top,
           left: offset.left
-        });
+        };
       });
-      return offsets.length == 1 ? offsets[0] : offsets;
     },
     on: function(type, callback, delegatee, autoRemove) {
       var newFunction = callback;
@@ -477,6 +479,74 @@
     return this;
   };
   create.prototype = brief.prototype;
+  /*
+   * Extend method which allows combining of objects.
+   * Slightly modified from node-extend
+   * https://github.com/dreamerslab/node.extend
+   */
+  brief.extend = function() {
+    var target = arguments[0] || {};
+    var i = 1;
+    var length = arguments.length;
+    var deep = false;
+    var options, name, src, copy, copyIsArray, clone, targetType, srcType, copyType;
+
+    // Handle a deep copy situation
+    if (typeof target === 'boolean') {
+      deep = target;
+      target = arguments[1] || {};
+      targetType = getVarType(target);
+      // skip the boolean and the target
+      i = 2;
+    }
+
+    // Handle case when target is a string or something (possible in deep copy)
+    if (typeof target !== 'object' && targetType !== 'Function') {
+      target = {};
+    }
+
+    for (; i < length; i++) {
+      // Only deal with non-null/undefined values
+      options = arguments[i];
+      if (options != null) {
+        if (typeof options === 'string') {
+          options = options.split('');
+        }
+        // Extend the base object
+        for (name in options) {
+          src = target[name];
+          srcType = getVarType(src);
+          copy = options[name];
+          copyType = getVarType(copy);
+
+          // Prevent never-ending loop
+          if (target === copy) {
+            continue;
+          }
+
+          // Recurse if we're merging plain objects or arrays
+          if (deep && copy && (copyType === 'Object' || (copyIsArray = copyType === 'Array'))) {
+            if (copyIsArray) {
+              copyIsArray = false;
+              clone = src && srcType === 'Array' ? src : [];
+            } else {
+              clone = src && srcType === 'Object' ? src : {};
+            }
+
+            // Never move original objects, clone them
+            target[name] = brief.extend(deep, clone, copy);
+
+          // Don't bring in undefined values
+          } else if (typeof copy !== 'undefined') {
+            target[name] = copy;
+          }
+        }
+      }
+    }
+
+    // Return the modified object
+    return target;
+  };
   brief.on = on;
   brief.onAll = onAll;
   brief.off = off;
