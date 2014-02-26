@@ -1,7 +1,7 @@
 brief.js
 ========
 
-Small (~5k minified, ~1.9k gzipped) library used for DOM Selection and Event Listening.
+Small (~6k minified, ~2.3k gzipped) library used for DOM Selection and Event Listening.
 
 ```
 // add a click listener to body that delegates to all the anchor tags.
