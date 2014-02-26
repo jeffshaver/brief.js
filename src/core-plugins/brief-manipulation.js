@@ -38,16 +38,14 @@
 }(this, function(brief) {
   'use strict';
   brief.prototype.getAttr = function(attr) {
-    var arr = [];
-    this.forEach(function(item) {
-      arr.push(item.getAttribute(attr));
+    return this.map(function(item) {
+      return item.getAttribute(attr);
     });
-    return arr;
   };
   brief.prototype.setAttr = function(attr, value) {
     this.forEach(function(item) {
       item.setAttribute(attr, value);
     });
     return this;
-  }
+  };
 }));
