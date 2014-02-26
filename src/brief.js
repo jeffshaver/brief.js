@@ -63,6 +63,7 @@
     el.webkitMatchesSelector ||
     el.oMatchesSelector
   );
+  var body = d.body;
   /*
    * A couple of regexs that we will use
    */
@@ -97,9 +98,59 @@
     }
     return newBrief;
   };
-  var delegatedListener = function(event) {
+  /*
+   * We will use this function in order to check parent
+   * trees so we can mimic event propagation
+   */
+  var propagateEvent = function(event, element) {
     var target = event.target;
+    var elements = managedElements[event.type];
+    var listeners = managedListeners[event.type];
+    var index, elementListeners, i, windowEventsNotCalled = true;
+    // While we can find a parent node
+    while (target !== undefined) {
+      /* 
+       * The get the index of the target inside of
+       * our elements array, if it exists
+       */
+      index = elements.indexOf(target);
+      /*
+       * If the target isn't the same as the element passed in
+       * OR the target is the window
+       * AND the the element exists in the elements array
+       */
+      if ((element !== target || target === window) && index !== -1) {
+        /*
+         * If the target is the window,
+         * make sure we know we don't need to 
+         * call the windows listeners later
+         */
+        if (target === window) {
+          windowEventsNotCalled = false;
+        }
+        elementListeners = listeners[index];
+        /*
+         * Call all of the parents listeners
+         */
+        for (i = 0; i < elementListeners.length; i++) {
+          elementListeners[i].call(target, event);
+        }
+      }
+      // Change the target to the parentNode of the target
+      target = (target !== body ? target.parentNode : window);
+    }
+    /*
+     * Return whether or not we ran any listeners
+     * on the window element so that we know
+     * whether or not to run the window listeners
+     * sepereately
+     */
+    return windowEventsNotCalled;
+  };
+  var delegatedListener = function(event) {
+    var target;
     var listeners = delegatedListeners[event.type];
+    var ev = new brief.Event(event);
     var i;
     var listener;
     var element;
@@ -108,23 +159,62 @@
       return;
     }
     for (i = 0; i < listeners.length; i++) {
+      target = event.target;
       listener = listeners[i];
       element = listener.element;
       delegatedTo = listener.delegatedTo;
-      if (match(target, delegatedTo)) {
-        if (element.contains(target)) {
-          listener.callback.call(element, event);
+      while (target !== document) {
+        if (match(target, delegatedTo)) {
+          if (element === window || element.contains(target) && !ev.propagationStopped) {
+            listener.callback.call(target, ev);
+          }
         }
+        target = target.parentNode;
       }
     }
   };
   var managedListener = function(event) {
     var elements = managedElements[event.type];
     var listeners = managedListeners[event.type];
-    var index = elements.indexOf(event.target);
-    while (index !== -1) {
-      listeners[index].call(elements[index], event);
-      index = elements.indexOf(event.target, index+1);
+    var ev = new brief.Event(event);
+    var windowEventsNotCalled = true;
+    var target = ev.target;
+    var index = elements.indexOf(target);
+    var i, elementListeners;
+
+    /* If the event target doesn't have any
+     * listeners attached, continually look 
+     * at its parent to see if that has any
+     */
+    while (index === -1 && target !== body) {
+      target = target.parentNode;
+      index = elements.indexOf(target);
+    }
+    /*
+     * If we found the target in the elements array,
+     * call all of its listeners and then attempt to propagate the event
+     */
+    if (index !== -1) {
+      for (i = 0; i < listeners[index].length; i++) {
+        listeners[index][i].call(target, ev);
+      }
+      if (!ev.propagationStopped) {
+        windowEventsNotCalled = propagateEvent(event, elements[index]);
+      }
+      return;
+    }
+    /*
+     * If we haven't stopped propagation thus far,
+     * we need to run the listeners on
+     * the window element
+     */
+    if (!ev.propagationStopped && windowEventsNotCalled) {
+      elementListeners = listeners[elements.indexOf(window)];
+      if (elementListeners) {
+        for (i = 0; i < elementListeners.length; i++) {
+          elementListeners[i].call(window, ev);
+        }
+      }
     }
   };
   /*
@@ -182,7 +272,7 @@
     length: 0,
     isBrief: true,
     splice: function() {
-      splice.apply(this, slice.call(arguments, 0));
+      splice.apply(this, arguments);
       return this;
     },
     push: function() {
@@ -314,12 +404,16 @@
          */
         if (!delegatee) {
           if (!managedElements[type]) {
+            
             managedElements[type] = [];
-            managedListeners[type] = [];
+            managedListeners[type] = {};
             document.addEventListener(type, managedListener, true);
           }
-          managedElements[type].push(element);
-          managedListeners[type].push(newFunction);
+          if (managedElements[type].indexOf(element) === -1) {
+            managedElements[type].push(element);
+            managedListeners[type][managedElements[type].length-1] = [];
+          }
+          managedListeners[type][managedElements[type].indexOf(element)].push(newFunction);
           continue;
         }
 
@@ -353,7 +447,7 @@
     },
     off: function(type, callback, delegatee) {
       var me = this;
-      var elements, element, len, listeners, listener, index, i;
+      var elements, element, len, listeners, elementListeners, listener, index, i, j;
       for (i = 0; i < me.length; i++) {
         /*
          * Set the current element
@@ -366,26 +460,20 @@
         if (!delegatee) {
           listeners = managedListeners[type];
           elements = managedElements[type];
-          index = listeners.indexOf(callback);
-          /*
-           * While we can still find a match 
-           * in the listeners array, keep splicing
-           */
-          while(index !== -1) {
-            if (element === elements[index]) {
-              elements.splice(index, 1);
-              listeners.splice(index, 1);
-              /*
-               * Since we spliced out an item, we need to
-               * decrease our current position so we can
-               * correctly calculate the next index
-               */
-              index--;
+          index = elements.indexOf(element);
+          elementListeners = listeners[index];
+          for (j = 0; j < elementListeners.length; j++) {
+            if (elementListeners[j] !== callback)  {
+              continue;
             }
-            /*
-             * We can now look for the next index (if any)
-             */
-            index = listeners.indexOf(callback, index+1);
+            elementListeners.splice(j, 1);
+          }
+          if (elementListeners.length === 0) {
+            elements.splice(index, 1);
+            listeners[index] = null;
+          }
+          if (elements.length === 0) {
+            document.removeEventListener(type, managedListener, true);
           }
           continue;
         }
@@ -479,6 +567,26 @@
     return this;
   };
   create.prototype = brief.prototype;
+  brief.Event = function(event) {
+    this.originalEvent = event;
+    this.type = event.type;
+    this.defaultPrevented = event.defaultPrevented;
+    this.propagationStopped = false;
+    this.timeStamp = event.timeStamp;
+    this.currentTarget = event.currentTarget;
+    this.target = event.target;
+    this.srcElement = event.srcElement;
+  };
+  brief.Event.prototype = {
+    preventDefault: function() {
+      this.defaultPrevented = true;
+      this.originalEvent.preventDefault();
+    },
+    stopPropagation: function() {
+      this.propagationStopped = true;
+      this.originalEvent.stopPropagation();
+    }
+  };
   /*
    * Extend method which allows combining of objects.
    * Slightly modified from node-extend
