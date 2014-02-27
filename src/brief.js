@@ -63,7 +63,6 @@
     el.webkitMatchesSelector ||
     el.oMatchesSelector
   );
-  var body = d.body;
   /*
    * A couple of regexs that we will use
    */
@@ -103,12 +102,23 @@
    * trees so we can mimic event propagation
    */
   var propagateEvent = function(event, element) {
-    var target = event.target;
+    var target = element.parentNode || window;
     var elements = managedElements[event.type];
     var listeners = managedListeners[event.type];
-    var index, elementListeners, i, windowEventsNotCalled = true;
+    var index, elementListeners, i;
+    /*
+     * If the element that was passed is the window,
+     * we don't need to continue running because
+     * window as far as we can go
+     */
+    if (element === window) {
+      return;
+    }
     // While we can find a parent node
     while (target !== undefined) {
+      if (event.propagationStopped) {
+        break;
+      }
       /* 
        * The get the index of the target inside of
        * our elements array, if it exists
@@ -125,9 +135,6 @@
          * make sure we know we don't need to 
          * call the windows listeners later
          */
-        if (target === window) {
-          windowEventsNotCalled = false;
-        }
         elementListeners = listeners[index];
         /*
          * Call all of the parents listeners
@@ -137,15 +144,8 @@
         }
       }
       // Change the target to the parentNode of the target
-      target = (target !== body ? target.parentNode : window);
+      target = (target.parentNode !== null ? target.parentNode : window);
     }
-    /*
-     * Return whether or not we ran any listeners
-     * on the window element so that we know
-     * whether or not to run the window listeners
-     * sepereately
-     */
-    return windowEventsNotCalled;
   };
   var delegatedListener = function(event) {
     var target;
@@ -177,17 +177,16 @@
     var elements = managedElements[event.type];
     var listeners = managedListeners[event.type];
     var ev = new brief.Event(event);
-    var windowEventsNotCalled = true;
     var target = ev.target;
     var index = elements.indexOf(target);
-    var i, elementListeners;
+    var i;
 
     /* If the event target doesn't have any
      * listeners attached, continually look 
      * at its parent to see if that has any
      */
-    while (index === -1 && target !== body) {
-      target = target.parentNode;
+    while (index === -1) {
+      target = (target.parentNode ? target.parentNode : window);
       index = elements.indexOf(target);
     }
     /*
@@ -199,22 +198,9 @@
         listeners[index][i].call(target, ev);
       }
       if (!ev.propagationStopped) {
-        windowEventsNotCalled = propagateEvent(event, elements[index]);
+        propagateEvent(ev, target);
       }
       return;
-    }
-    /*
-     * If we haven't stopped propagation thus far,
-     * we need to run the listeners on
-     * the window element
-     */
-    if (!ev.propagationStopped && windowEventsNotCalled) {
-      elementListeners = listeners[elements.indexOf(window)];
-      if (elementListeners) {
-        for (i = 0; i < elementListeners.length; i++) {
-          elementListeners[i].call(window, ev);
-        }
-      }
     }
   };
   /*
@@ -416,7 +402,6 @@
           managedListeners[type][managedElements[type].indexOf(element)].push(newFunction);
           continue;
         }
-
         /*
          * If we haven't gotten a listener for this type
          * yet, lets create an array to hold listeners
@@ -467,10 +452,6 @@
               continue;
             }
             elementListeners.splice(j, 1);
-          }
-          if (elementListeners.length === 0) {
-            elements.splice(index, 1);
-            listeners[index] = null;
           }
           if (elements.length === 0) {
             document.removeEventListener(type, managedListener, true);
@@ -598,7 +579,6 @@
     var length = arguments.length;
     var deep = false;
     var options, name, src, copy, copyIsArray, clone, targetType, srcType, copyType;
-
     // Handle a deep copy situation
     if (typeof target === 'boolean') {
       deep = target;
@@ -607,12 +587,10 @@
       // skip the boolean and the target
       i = 2;
     }
-
     // Handle case when target is a string or something (possible in deep copy)
     if (typeof target !== 'object' && targetType !== 'Function') {
       target = {};
     }
-
     for (; i < length; i++) {
       // Only deal with non-null/undefined values
       options = arguments[i];
@@ -631,7 +609,6 @@
           if (target === copy) {
             continue;
           }
-
           // Recurse if we're merging plain objects or arrays
           if (deep && copy && (copyType === 'Object' || (copyIsArray = copyType === 'Array'))) {
             if (copyIsArray) {
@@ -640,10 +617,8 @@
             } else {
               clone = src && srcType === 'Object' ? src : {};
             }
-
             // Never move original objects, clone them
             target[name] = brief.extend(deep, clone, copy);
-
           // Don't bring in undefined values
           } else if (typeof copy !== 'undefined') {
             target[name] = copy;
@@ -651,7 +626,6 @@
         }
       }
     }
-
     // Return the modified object
     return target;
   };
