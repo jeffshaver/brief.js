@@ -179,7 +179,7 @@
     var ev = new brief.Event(event);
     var target = ev.target;
     var index = elements.indexOf(target);
-    var i;
+    var i, elementListeners;
 
     /* If the event target doesn't have any
      * listeners attached, continually look 
@@ -194,8 +194,9 @@
      * call all of its listeners and then attempt to propagate the event
      */
     if (index !== -1) {
-      for (i = 0; i < listeners[index].length; i++) {
-        listeners[index][i].call(target, ev);
+      elementListeners = listeners[index];
+      for (i = 0; i < elementListeners.length; i++) {
+        elementListeners[i].call(target, ev);
       }
       if (!ev.propagationStopped) {
         propagateEvent(ev, target);
@@ -390,14 +391,13 @@
          */
         if (!delegatee) {
           if (!managedElements[type]) {
-            
             managedElements[type] = [];
-            managedListeners[type] = {};
+            managedListeners[type] = [];
             document.addEventListener(type, managedListener, true);
           }
           if (managedElements[type].indexOf(element) === -1) {
             managedElements[type].push(element);
-            managedListeners[type][managedElements[type].length-1] = [];
+            managedListeners[type].push([]);
           }
           managedListeners[type][managedElements[type].indexOf(element)].push(newFunction);
           continue;
@@ -452,6 +452,10 @@
               continue;
             }
             elementListeners.splice(j, 1);
+          }
+          if (elementListeners.length === 0) {
+            elements.splice(index, 1);
+            listeners.splice(index, 1);
           }
           if (elements.length === 0) {
             document.removeEventListener(type, managedListener, true);
