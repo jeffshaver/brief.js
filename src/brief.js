@@ -129,7 +129,7 @@
        * OR the target is the window
        * AND the the element exists in the elements array
        */
-      if ((element !== target || target === window) && index !== -1) {
+      if (element !== target && index !== -1) {
         /*
          * If the target is the window,
          * make sure we know we don't need to 
@@ -155,7 +155,7 @@
     var listener;
     var element;
     var delegatedTo;
-    if (target === document) {
+    if (target === d) {
       return;
     }
     for (i = 0; i < listeners.length; i++) {
@@ -163,7 +163,7 @@
       listener = listeners[i];
       element = listener.element;
       delegatedTo = listener.delegatedTo;
-      while (target !== document) {
+      while (target !== d) {
         if (match(target, delegatedTo)) {
           if (element === window || element.contains(target) && !ev.propagationStopped) {
             listener.callback.call(target, ev);
@@ -393,7 +393,7 @@
           if (!managedElements[type]) {
             managedElements[type] = [];
             managedListeners[type] = [];
-            document.addEventListener(type, managedListener, true);
+            d.addEventListener(type, managedListener, true);
           }
           if (managedElements[type].indexOf(element) === -1) {
             managedElements[type].push(element);
@@ -411,7 +411,7 @@
 
         if (!delegatedListeners[type]) {
           delegatedListeners[type] = [];
-          document.addEventListener(type, delegatedListener, true);
+          d.addEventListener(type, delegatedListener, true);
         }
         /*
          * We need to push an instance of this type into
@@ -458,7 +458,7 @@
             listeners.splice(index, 1);
           }
           if (elements.length === 0) {
-            document.removeEventListener(type, managedListener, true);
+            d.removeEventListener(type, managedListener, true);
           }
           continue;
         }
@@ -482,7 +482,7 @@
           }
         }
         if (!listeners.length) {
-          document.removeEventListener(type, delegatedListener, true);
+          d.removeEventListener(type, delegatedListener, true);
         }
       }
     },
