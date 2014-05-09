@@ -87,7 +87,7 @@
    */
   var standardizeElements = function(elements) {
     var newBrief = brief();
-    if (typeof elements == 'string') {
+    if (getVarType(elements) != 'String') {
       elements = brief(elements);
     }
     if (!elements.isBrief && elements.length) {
@@ -181,13 +181,21 @@
     var index = elements.indexOf(target);
     var i, elementListeners;
 
-    /* If the event target doesn't have any
+    /* 
+     * If the event target doesn't have any
      * listeners attached, continually look 
      * at its parent to see if that has any
      */
     while (index === -1) {
       target = (target.parentNode ? target.parentNode : window);
       index = elements.indexOf(target);
+      /*
+       * If we are at the window and we still don't have 
+       * a match, we need to break out of the while loop
+       */
+      if (target === window && index === -1) {
+        break;
+      }
     }
     /*
      * If we found the target in the elements array,
@@ -298,7 +306,7 @@
     },
     filter: function(filterFn) {
       var newBrief, selector;
-      if (typeof filterFn == 'string') {
+      if (getVarType(filterFn) == 'String') {
         selector = filterFn;
         filterFn = function(item) {
           return match(item, selector);
@@ -318,11 +326,17 @@
       return -1;
     },
     get: function(index) {
+      if (getVarType(index) != 'Number') {
+        throw new TypeError('`index` must be a number');
+      }
       return this[index];
     },
     find: function(selector) {
       var newBrief = brief();
       var i;
+      if (getVarType(selector) != 'String') {
+        throw new TypeError('selector must be a string');
+      }
       for (i = 0; i < this.length; i++) {
         push.apply(newBrief, slice.call(this.get(i).querySelectorAll(selector), 0));
       }
@@ -338,6 +352,9 @@
       return newBrief;
     },
     forEach: function(callback) {
+      if (getVarType(callback) != 'Function') {
+        throw new TypeError('callback must be a function');
+      }
       forEach.call(this, callback);
       return this;
     },
@@ -360,7 +377,13 @@
       var newFunction = callback;
       var me = this;
       var element, i;
-      if (typeof delegatee == 'boolean') {
+      if (getVarType(type) != 'String') {
+        throw new TypeError('type must be a string');
+      }
+      if (getVarType(callback) != 'Function') {
+        throw new TypeError('callback must be a function');
+      }
+      if (getVarType(delegatee) != 'Boolaen') {
         autoRemove = delegatee;
         delegatee = undefined;
       }
@@ -513,7 +536,7 @@
       /*
        * If we are dealing with a context and or a selector that are strings
        */
-      if (typeof context == 'string' || !context && selector) {
+      if (getVarType(context) == 'String' || !context && selector) {
         this.selector = context || selector;
         if (idRegex.test(this.selector)) {
           r = [d.getElementById(this.selector.substring(1))];
@@ -544,7 +567,7 @@
       /*
        * If we are dealing with an array like object or an HTML element
        */
-      } else if (typeof context == 'object') {
+      } else if (getVarType(context) == 'object') {
         push.apply(this, context.length ? context : [context]);
         this.find(selector);
       }
