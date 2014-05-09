@@ -27,7 +27,7 @@ The brief function takes in a ```selector``` and an optional ```context```. This
 the brief. methods
 ==================
 
-There are three methods that you are able to call without envoking the actual brief function: ```.on```, ```.onAll```, ```.once```, ```.onceAll```, ```.off``` and ```offAll```.
+There are six methods that you are able to call without envoking the actual brief function: ```.on```, ```.onAll```, ```.once```, ```.onceAll```, ```.off``` and ```offAll```.
 
 These functions are the same functions that are called on brief objects, however the element(s) that you are trying to add event listeners to must be passed as the first argument.
 
