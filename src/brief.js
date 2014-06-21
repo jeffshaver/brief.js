@@ -392,6 +392,16 @@
         };
       });
     },
+    getAttr: function(attr) {
+      return this.map(function(element) {
+        return element.getAttribute(attr);
+      });
+    },
+    setAttr: function(attr, value) {
+      return this.forEach(function(element) {
+        element.setAttribute(attr, value);
+      });
+    },
     on: function(type, callback, delegatee, autoRemove) {
       var newFunction = callback;
       var me = this;
