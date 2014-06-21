@@ -22,26 +22,54 @@
      * We need a document to use brief, so throw an error if we
      * are in environments likes node
      */
-    module.exports = global.document ? factory() : function() {
-      throw new Error('brief requires a document to run');
-    };
+    module.exports = factory();
   } else {
     /*
      * Browser globals (root is window)
      */
     root.brief = factory();
   }
-}(this, function(d, e, a) {
+}(this, function() {
   'use strict';
+  var d = document;
+  var e = Element;
+  var a = Array;
   /*
    * Main function that we will use to create brief object
    */
   var create;
   /*
    * For delegated listeners, we will need to manage a list of callbacks
+   *
+   * Structure:
+   *   {
+   *     click: [
+   *       {
+   *         element: element,
+   *         delegatedTo: delegatedTo,
+   *         callback: callback
+   *       }
+   *     ]
+   *   }
    */
   var delegatedListeners = {};
+  /*
+   * Structure:
+   *   {
+   *     click: [
+   *       [callback, callback], [callback, callback]
+   *     ]
+   *   }
+   */
   var managedListeners = {};
+  /*
+   * Structure:
+   *   {
+   *     click: [
+   *       element, element, element
+   *     ]
+   *   }
+   */
   var managedElements = {};
   /*
    * We need to save references to some prototype methods that
@@ -54,7 +82,6 @@
   var map = arr.map;
   var splice = arr.splice;
   var push = arr.push;
-  var pop = arr.pop;
   var filter = arr.filter;
   var matchFunction = (
     el.matchesSelector ||
@@ -87,13 +114,14 @@
    */
   var standardizeElements = function(elements) {
     var newBrief = brief();
-    if (getVarType(elements) != 'String') {
+    if (getVarType(elements) == 'String') {
       elements = brief(elements);
     }
+    console.log(elements);
     if (!elements.isBrief && elements.length) {
-      push.apply(newBrief, elements);
+      newBrief.add(elements);
     } else {
-      newBrief.push(elements);
+      newBrief.add(elements);
     }
     return newBrief;
   };
@@ -147,10 +175,14 @@
       target = (target.parentNode !== null ? target.parentNode : window);
     }
   };
-  var delegatedListener = function(event) {
-    var target;
-    var listeners = delegatedListeners[event.type];
+  var pushToStack = function(briefObj, addStack) {
+    if (addStack !== false) {
+      briefObj.stack.push(briefObj.toArray());
+    }
+  };
+  var delegatedListener = function(event, target) {
     var ev = new brief.Event(event);
+    var listeners = delegatedListeners[ev.type];
     var i;
     var listener;
     var element;
@@ -159,7 +191,7 @@
       return;
     }
     for (i = 0; i < listeners.length; i++) {
-      target = event.target;
+      target = ev.target;
       listener = listeners[i];
       element = listener.element;
       delegatedTo = listener.delegatedTo;
@@ -173,20 +205,19 @@
       }
     }
   };
-  var managedListener = function(event) {
-    var elements = managedElements[event.type];
-    var listeners = managedListeners[event.type];
-    var ev = new brief.Event(event);
-    var target = ev.target;
-    var index = elements.indexOf(target);
+  var managedListener = function(event, target) {
+    var ev = new brief.Event(event, target);
+    var elements = managedElements[ev.type];
+    var listeners = managedListeners[ev.type];
+    var index = elements.indexOf(ev.target);
     var i, elementListeners;
-
+    target = ev.target;
     /* 
      * If the event target doesn't have any
      * listeners attached, continually look 
      * at its parent to see if that has any
      */
-    while (index === -1) {
+    while (index === -1 && !ev.isArtificial) {
       target = (target.parentNode ? target.parentNode : window);
       index = elements.indexOf(target);
       /*
@@ -212,43 +243,7 @@
       return;
     }
   };
-  /*
-   * We don't want to force people to use the DOM Selection
-   * API, so we are going to use these methods to allow them
-   * to pass selectors/elements/nodelists/etc... into methods
-   * attached to the brief funciton that will let them use
-   * the eventing API without the selection API
-   */
-  var on = function() {
-    var newBrief = standardizeElements(arguments[0]);
-    var args = slice.call(arguments, 1);
-    brief.prototype.on.apply(newBrief, args);
-  };
-  var onAll = function() {
-    var newBrief = standardizeElements(arguments[0]);
-    var args = slice.call(arguments, 1);
-    brief.prototype.onAll.apply(newBrief, args);
-  };
-  var off = function() {
-    var newBrief = standardizeElements(arguments[0]);
-    var args = slice.call(arguments, 1);
-    brief.prototype.off.apply(newBrief, args);
-  };
-  var offAll = function() {
-    var newBrief = standardizeElements(arguments[0]);
-    var args = slice.call(arguments, 1);
-    brief.prototype.offAll.apply(newBrief, args);
-  };
-  var once = function() {
-    var newBrief = standardizeElements(arguments[0]);
-    var args = slice.call(arguments, 1);
-    brief.prototype.once.apply(newBrief, args);
-  };
-  var onceAll = function() {
-    var newBrief = standardizeElements(arguments[0]);
-    var args = slice.call(arguments, 1);
-    brief.prototype.onceAll.apply(newBrief, args);
-  };
+
   /*
    * The brief function will create and return a new brief object (array-like)
    */
@@ -270,11 +265,13 @@
       splice.apply(this, arguments);
       return this;
     },
-    push: function() {
-      var args = slice.call(arguments, 0);
+    stack: [],
+    add: function(addStack) {
+      var args = slice.call(arguments, addStack !== false ? 0 : 1);
       var arg, i;
+      pushToStack(this, addStack);
       /*
-       * Loop over all arguments and push
+       * Loop over all arguments and add
        * things into the brief object if
        * the current argument is a brief object,
        * an array of elements or an element
@@ -291,30 +288,46 @@
       }
       return this;
     },
-    pop: function() {
-      pop.apply(this);
+    remove: function(addStack) {
+      var args = slice.call(arguments, addStack !== false ? 0 : 1);
+      pushToStack(this, addStack);
+      if (args[0] == undefined) {
+        args[0] = this.length - 1;
+      }
+      if (args[1] == undefined) {
+        args[1] = 1;
+      }
+      this.splice(args[0], args[1]);
       return this;
+    },
+    revert: function() {
+      if (this.stack.length === 0) {
+        return this;
+      }
+      return this.empty(false).add(false, this.stack.pop());
     },
     toArray: function() {
       return slice.call(this, 0);
     },
-    empty: function() {
+    empty: function(addStack) {
       while(this.length > 0) {
-        this.pop();
+        this.remove(addStack);
       }
       return this;
     },
-    filter: function(filterFn) {
-      var newBrief, selector;
+    filter: function(filterFn, addStack) {
+      var elements, selector;
+      pushToStack(this, addStack);
       if (getVarType(filterFn) == 'String') {
         selector = filterFn;
         filterFn = function(item) {
           return match(item, selector);
         };
       }
-      newBrief = filter.call(this, filterFn);
-      newBrief.selector = (selector ? selector : this.selector);
-      return newBrief;
+      elements = filter.call(this.toArray(), filterFn);
+      this.empty(false).add(false, elements);
+      this.selector = selector || this.selector;
+      return this;
     },
     indexOf: function(selector) {
       var i;
@@ -331,25 +344,31 @@
       }
       return this[index];
     },
-    find: function(selector) {
-      var newBrief = brief();
+    find: function(selector, addStack) {
+      var newElements = [];
       var i;
       if (getVarType(selector) != 'String') {
         throw new TypeError('selector must be a string');
       }
+      pushToStack(this, addStack);
+      console.log('this', this);
       for (i = 0; i < this.length; i++) {
-        push.apply(newBrief, slice.call(this.get(i).querySelectorAll(selector), 0));
+        push.apply(newElements, slice.call(this.get(i).querySelectorAll(selector), 0));
       }
-      newBrief.selector = this.selctor;
-      return newBrief;
+      console.log('elements', newElements);
+      this.empty(false).add(false, newElements);
+      this.selector = selector;
+      return this;
     },
-    getChildren: function() {
-      var newBrief = brief();
+    getChildren: function(addStack) {
+      var newElements = [];
       var i;
+      pushToStack(this, addStack);
       for (i = 0; i < this.length; i++) {
-        push.apply(newBrief, this[i].children);
+        push.apply(newElements, this[i].children);
       }
-      return newBrief;
+      this.empty(false).add(false, newElements);
+      return this;
     },
     forEach: function(callback) {
       if (getVarType(callback) != 'Function') {
@@ -524,6 +543,16 @@
       var args = slice.call(arguments, 0);
       args.push(true);
       return brief.prototype.onAll.apply(this, args);
+    },
+    trigger: function(eventType) {
+      this.forEach(function(e) {
+        if (managedListeners[eventType] && managedListeners[eventType].length > 0) {
+          managedListener(eventType, e);
+        }
+        if (delegatedListeners[eventType] && delegatedListeners[eventType].length > 0) {
+          //delegatedListener(eventType, e);
+        }
+      });
     }
   };
   create = brief.prototype.create = function(selector, context) {
@@ -551,39 +580,52 @@
          * If the query didn't return null
          */
         if (r.length && r[0] != null) {
-          push.apply(this, slice.call(r, 0));
+          this.add(false, slice.call(r, 0));
         }
       }
       /*
        * If we just grabbed the elements related to the context
        */
       if (this.selector === context) {
-        this.find(selector);
+        this.find(selector, false);
       /*
        * If we are dealing with a context which is a brief object
        */
       } else if (context && context.isBrief) {
-        push.apply(this, context.find(selector));
+        this.add(false, context.find(selector));
       /*
        * If we are dealing with an array like object or an HTML element
        */
       } else if (getVarType(context) == 'object') {
-        push.apply(this, context.length ? context : [context]);
-        this.find(selector);
+        this.add(false, context.length ? context : [context]);
+        this.find(selector, false);
       }
     }
     return this;
   };
   create.prototype = brief.prototype;
-  brief.Event = function(event) {
-    this.originalEvent = event;
-    this.type = event.type;
-    this.defaultPrevented = event.defaultPrevented;
-    this.propagationStopped = false;
-    this.timeStamp = event.timeStamp;
-    this.currentTarget = event.currentTarget;
-    this.target = event.target;
-    this.srcElement = event.srcElement;
+  brief.Event = function(event, target) {
+    // Event Object
+    if (!target) {
+      this.originalEvent = event;
+      this.type = event.type;
+      this.defaultPrevented = event.defaultPrevented;
+      this.propagationStopped = false;
+      this.timeStamp = event.timeStamp;
+      this.currentTarget = event.currentTarget;
+      this.target = event.target;
+      this.srcElement = event.srcElement;
+      this.isArtificial = false;
+    } else {
+      this.type = event;
+      this.defaultPrevented = false;
+      this.propagationStopped = true;
+      this.timeStamp = new Date().getTime();
+      this.currentTarget = target;
+      this.target = target;
+      this.srcElement = target;
+      this.isArtificial = true;
+    }
   };
   brief.Event.prototype = {
     preventDefault: function() {
@@ -656,11 +698,19 @@
     // Return the modified object
     return target;
   };
-  brief.on = on;
-  brief.onAll = onAll;
-  brief.off = off;
-  brief.offAll = offAll;
-  brief.once = once;
-  brief.onceAll = onceAll;
+  /*
+   * We don't want to force people to use the DOM Selection
+   * API, so we are going to use these methods to allow them
+   * to pass selectors/elements/nodelists/etc... into methods
+   * attached to the brief funciton that will let them use
+   * the eventing API without the selection API
+   */
+  ['on', 'onAll', 'off', 'offAll', 'once', 'onceAll', 'trigger'].forEach(function(e) {
+    brief[e] = function() {
+      var newBrief = standardizeElements(arguments[0]);
+      var args = slice.call(arguments, 1);
+      brief.prototype[e].apply(newBrief, args);
+    };
+  });
   return brief;
-}.bind(this, document, Element, Array)));
+}));
