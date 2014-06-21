@@ -159,6 +159,7 @@ body.revert();
 
 // Or all in one line
 brief('body').add(brief('head')).revert();
+```
 
 Non-delegation example
 ======================
