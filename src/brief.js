@@ -181,6 +181,7 @@
     }
   };
   var delegatedListener = function(event, target) {
+    
     var ev = new brief.Event(event);
     var listeners = delegatedListeners[ev.type];
     var i;
@@ -399,7 +400,11 @@
     },
     setAttr: function(attr, value) {
       return this.forEach(function(element) {
-        element.setAttribute(attr, value);
+        if (value === false) {
+          element.removeAttribute(attr);
+        } else {
+          element.setAttribute(attr, value);
+        }
       });
     },
     on: function(type, callback, delegatee, autoRemove) {
@@ -412,7 +417,7 @@
       if (getVarType(callback) != 'Function') {
         throw new TypeError('callback must be a function');
       }
-      if (getVarType(delegatee) != 'Boolaen') {
+      if (getVarType(delegatee) == 'Boolaen') {
         autoRemove = delegatee;
         delegatee = undefined;
       }
@@ -559,9 +564,6 @@
         if (managedListeners[eventType] && managedListeners[eventType].length > 0) {
           managedListener(eventType, e);
         }
-        if (delegatedListeners[eventType] && delegatedListeners[eventType].length > 0) {
-          //delegatedListener(eventType, e);
-        }
       });
     }
   };
@@ -606,6 +608,8 @@
       /*
        * If we are dealing with an array like object or an HTML element
        */
+      } else if (context && !context.isBrief) {
+        this.add(false, context.querySelectorAll(selector));
       } else if (getVarType(context) == 'object') {
         this.add(false, context.length ? context : [context]);
         this.find(selector, false);
