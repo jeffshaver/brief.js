@@ -280,7 +280,7 @@
         arg = args[i];
         if (arg.isBrief) {
           push.apply(this, arg.toArray());
-        } else if (arg.length) {
+        } else if (getVarType(arg) == 'Array') {
           push.apply(this, arg);
         } else {
           push.call(this, arg);
@@ -574,7 +574,7 @@
       /*
        * If we are dealing with a context and or a selector that are strings
        */
-      if (getVarType(context) == 'String' || !context && getVarType(selector) == 'String') {
+      if (getVarType(context) == 'String' || context == undefined && getVarType(selector) == 'String') {
         this.selector = context || selector;
         if (idRegex.test(this.selector)) {
           r = [d.getElementById(this.selector.substring(1))];
@@ -593,9 +593,15 @@
         }
       }
       /*
+       * If we are dealing with an array like object or an HTML element
+       */
+      if (/^HTML(.*Element|Document)$/i.test(getVarType(context))) {
+        this.add(false, context);
+        this.find(selector, false);
+      /*
        * If an element was passed in
        */
-      if (/^(HTML(.*Element|Document)|Window)$/i.test(getVarType(selector))) {
+      } else if (/^(HTML(.*Element|Document)|Window)$/i.test(getVarType(selector))) {
         this.add(false, selector);
       /*
        * If we just grabbed the elements related to the context
@@ -607,12 +613,6 @@
        */
       } else if (context && context.isBrief) {
         this.add(false, context.find(selector));
-      /*
-       * If we are dealing with an array like object or an HTML element
-       */
-      } else if (getVarType(context) == 'Object') {
-        this.add(false, context.length ? context : [context]);
-        this.find(selector, false);
       }
     }
     return this;
