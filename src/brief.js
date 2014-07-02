@@ -117,7 +117,6 @@
     if (getVarType(elements) == 'String') {
       elements = brief(elements);
     }
-    console.log(elements);
     if (!elements.isBrief && elements.length) {
       newBrief.add(elements);
     } else {
@@ -352,11 +351,9 @@
         throw new TypeError('selector must be a string');
       }
       pushToStack(this, addStack);
-      console.log('this', this);
       for (i = 0; i < this.length; i++) {
         push.apply(newElements, slice.call(this.get(i).querySelectorAll(selector), 0));
       }
-      console.log('elements', newElements);
       this.empty(false).add(false, newElements);
       this.selector = selector;
       return this;
@@ -577,7 +574,7 @@
       /*
        * If we are dealing with a context and or a selector that are strings
        */
-      if (getVarType(context) == 'String' || !context && selector) {
+      if (getVarType(context) == 'String' || !context && getVarType(selector) == 'String') {
         this.selector = context || selector;
         if (idRegex.test(this.selector)) {
           r = [d.getElementById(this.selector.substring(1))];
@@ -596,9 +593,14 @@
         }
       }
       /*
+       * If an element was passed in
+       */
+      if (/^(HTML(.*Element|Document)|Window)$/i.test(getVarType(selector))) {
+        this.add(false, selector);
+      /*
        * If we just grabbed the elements related to the context
        */
-      if (this.selector === context) {
+      } else if (this.selector === context) {
         this.find(selector, false);
       /*
        * If we are dealing with a context which is a brief object
@@ -608,9 +610,7 @@
       /*
        * If we are dealing with an array like object or an HTML element
        */
-      } else if (context && !context.isBrief) {
-        this.add(false, context.querySelectorAll(selector));
-      } else if (getVarType(context) == 'object') {
+      } else if (getVarType(context) == 'Object') {
         this.add(false, context.length ? context : [context]);
         this.find(selector, false);
       }
