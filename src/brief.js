@@ -477,12 +477,14 @@
           callback: callback
         });
       }
+      return this;
     },
     onAll: function(types, callback, delegatee, autoRemove) {
       var i;
       for (i = 0; i < types.length; i++) {
         this.on(types[i], callback, delegatee, autoRemove);
       }
+      return this;
     },
     off: function(type, callback, delegatee) {
       var me = this;
@@ -539,12 +541,14 @@
           d.removeEventListener(type, delegatedListener, true);
         }
       }
+      return this;
     },
     offAll: function(types, callback, delegatee) {
       var i;
       for (i = 0; i < types.length; i++) {
         this.off(types[i], callback, delegatee);
       }
+      return this;
     },
     once: function() {
       var args = slice.call(arguments, 0);
@@ -562,6 +566,7 @@
           managedListener(eventType, e);
         }
       });
+      return this;
     }
   };
   create = brief.prototype.create = function(selector, context) {
