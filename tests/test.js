@@ -36,22 +36,22 @@ describe('brief', function() {
       assert.equal(true, i == length);
     });
   });
-  describe('brief().pop should remove last element', function() {
+  describe('brief().remove should remove last element', function() {
     it('should return true if the new length is the original length - 1', function() {
       var a = brief('#elementsContainer a');
       var length = a.length;
       var lastElement = a.get(a.length-1);
-      a.pop();
+      a.remove();
       assert.equal(true, a.length == length - 1 && lastElement !== a.get(a.length-1));
     });
   });
-  describe('brief().push should add an element to the end of the object', function() {
+  describe('brief().add should add an element to the end of the object', function() {
     it('should return true if the new length is the original length + 1', function() {
       var a = brief('#elementsContainer a');
       var container = brief('#elementsContainer');
       var length = a.length;
       var lastElement = a.get(a.length-1);
-      a.push(container);
+      a.add(container);
       assert.equal(true, a.length == length+1 && lastElement !== a.get(a.length-1));
     });
   });
