@@ -204,7 +204,7 @@
       element = listener.element;
       delegatedTo = listener.delegatedTo;
       while (target !== d) {
-        if (_match(target, delegatedTo)) {
+        if ((_isElement(target) || _isDocument(target)) && _match(target, delegatedTo)) {
           if (element === window || element.contains(target) && !ev.propagationStopped) {
             listener.callback.call(target, ev);
           }
